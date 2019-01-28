@@ -233,8 +233,10 @@ def pipeline(in_file, eval_file=None,
         logs.info("Loaded preprocessed file:", tokenized_file)
     # Tokenizing End.
 
+
+    input()
     # First Document retrieval.
-    print("Step 2. First Document Retrieval")
+    logs.info("Step 2. First Document Retrieval")
 
     if steps['s2.1doc_retri']['do']:
         doc_retrieval_result_list = first_doc_retrieval(haonan_docretri_object, tokenized_file,

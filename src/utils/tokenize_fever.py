@@ -35,6 +35,7 @@ def tokenized_claim(in_file, out_file):
     print(path_stanford_corenlp_full_2017_06_09)
     drqa_yixin.tokenizers.set_default('corenlp_classpath', path_stanford_corenlp_full_2017_06_09)
     tok = CoreNLPTokenizer(annotators=['pos', 'lemma'])
+    tok._convert = lambda a:a
 
     d_list = load_jsonl(in_file)
     for item in tqdm(d_list):
@@ -49,10 +50,12 @@ def tokenized_claim_list(in_list):
     path_stanford_corenlp_full_2017_06_09 = str(config.PRO_ROOT / 'dep_packages/stanford-corenlp-full-2017-06-09/*')
     drqa_yixin.tokenizers.set_default('corenlp_classpath', path_stanford_corenlp_full_2017_06_09)
     tok = CoreNLPTokenizer(annotators=['pos', 'lemma'])
-
+    tok._convert = lambda a:a
     for item in tqdm(in_list):
         item['claim'] = ' '.join(easy_tokenize(item['claim'], tok))
 
+    del tok
+    gc.collect()
     return in_list
 
 
