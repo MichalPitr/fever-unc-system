@@ -1,3 +1,4 @@
+from log_helper import LogHelper
 from utils import common
 import config
 from utils.fever_db import create_db, save_wiki_pages, create_sent_db, build_sentences_table, check_document_id
@@ -23,4 +24,5 @@ def build_database():
 
 
 if __name__ == '__main__':
+    LogHelper.setup()
     fire.Fire()
