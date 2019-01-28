@@ -17,7 +17,7 @@ def easy_tokenize(text, tok):
 def save_jsonl(d_list, filename):
 
     log = LogHelper.get_logger("data-io")
-    log.info("Save to Jsonl:", filename)
+    log.info("Save to Jsonl: {0}", filename)
     with open(filename, encoding='utf-8', mode='w') as out_f:
         for item in d_list:
             out_f.write(json.dumps(item) + '\n')
@@ -27,7 +27,7 @@ def load_jsonl(filename):
     d_list = []
     log = LogHelper.get_logger("data-io")
     with open(filename, encoding='utf-8', mode='r') as in_f:
-        log.info("Read from JSONL file:", filename)
+        log.info("Read from JSONL file: {0}", filename)
         for line in tqdm(in_f):
             item = json.loads(line.strip())
             d_list.append(item)
@@ -48,8 +48,6 @@ def tokenized_claim(in_file, out_file):
 
     save_jsonl(d_list, out_file)
     tok.shutdown()
-    del tok
-    gc.collect()
 
 
 def tokenized_claim_list(in_list):
@@ -59,10 +57,7 @@ def tokenized_claim_list(in_list):
     tok._convert = lambda a:a
     for item in tqdm(in_list):
         item['claim'] = ' '.join(easy_tokenize(item['claim'], tok))
-
     tok.shutdown()
-    del tok
-    gc.collect()
 
     return in_list
 
