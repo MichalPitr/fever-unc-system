@@ -5,7 +5,7 @@ import drqa_yixin.tokenizers
 from drqa_yixin.tokenizers import CoreNLPTokenizer
 from utils import fever_db, text_clean
 from tqdm import tqdm
-
+import gc
 
 def easy_tokenize(text, tok):
     return tok.tokenize(text_clean.normalize(text)).words()
@@ -40,6 +40,8 @@ def tokenized_claim(in_file, out_file):
         item['claim'] = ' '.join(easy_tokenize(item['claim'], tok))
 
     save_jsonl(d_list, out_file)
+    del tok
+    gc.collect()
 
 
 def tokenized_claim_list(in_list):

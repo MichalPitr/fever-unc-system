@@ -90,6 +90,7 @@ if __name__ == '__main__':
         id_to_natural_id_dict[doc_id]['words'] = words
         id_to_natural_id_dict[doc_id]['lemmas'] = lemmas
 
+
     with open(config.DATA_ROOT / "tokenized_doc_id.json", encoding='utf-8', mode='w') as out_f:
         json.dump(id_to_natural_id_dict, out_f)
     # print("Yes")
