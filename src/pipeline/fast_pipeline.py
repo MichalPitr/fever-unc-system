@@ -1,5 +1,6 @@
 import os
 from argparse import ArgumentParser
+from pathlib import Path
 
 from chaonan_src.doc_retrieval_experiment import DocRetrievalExperimentSpiral, DocRetrievalExperiment, \
     DocRetrievalExperimentTwoStep
@@ -179,6 +180,8 @@ def pipeline(in_file,
     doc_retrieval_method = 'pageview'
     haonan_docretri_object = HAONAN_DOCRETRI_OBJECT()
 
+    working_dir = Path(working_dir)
+
     if not working_dir.exists():
         working_dir.mkdir()
 
@@ -351,8 +354,7 @@ def pipeline(in_file,
     for item in nli_results:
         del item['label']
 
-    output_file = output_file
-    build_submission_file(nli_results, output_file)
+    build_submission_file(nli_results, out_file)
 
     output_file = working_dir / "predictions.jsonl"
     build_submission_file(nli_results, output_file)
