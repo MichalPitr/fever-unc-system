@@ -188,7 +188,7 @@ def pipeline(in_file,
     logs.info("Current Result Root: {0}".format(working_dir))
 
 
-
+    in_file = Path(in_file)
 
     in_file_stem = in_file.stem
     tokenized_file = working_dir / f"t_{in_file_stem}.jsonl"
