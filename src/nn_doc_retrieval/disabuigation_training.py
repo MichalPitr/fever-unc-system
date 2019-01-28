@@ -3,7 +3,7 @@ from utils import c_scorer
 from utils import check_sentences
 from utils import fever_db
 import random
-
+from tqdm import tqdm
 
 def item_resorting(d_list, top_k=None):
     for item in tqdm(d_list):

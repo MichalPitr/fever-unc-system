@@ -380,8 +380,11 @@ def pipeline_tokenize(in_file, out_file):
 
 def first_doc_retrieval(retri_object, in_file, method='pageview', top_k=100):
     # doc_exp = DocRetrievalExperiment()
+    logger = LogHelper.get_logger("doc-retrieval-1")
+    logger.info("First doc")
     init_haonan_docretri_object(retri_object, method=method)
     d_list = common.load_jsonl(in_file)
+    logger.info("Sample evidence")
     retri_object.instance.sample_answer_with_priority(d_list, top_k=top_k)
     return d_list
 
