@@ -2,8 +2,8 @@ from collections import Counter
 
 from flashtext import KeywordProcessor
 import config
-import drqa_yixin.tokenizers
-from drqa_yixin.tokenizers import CoreNLPTokenizer
+import drqa.tokenizers
+from drqa.tokenizers import CoreNLPTokenizer
 from tqdm import tqdm
 import json
 from utils.fever_db import get_all_doc_ids, convert_brc

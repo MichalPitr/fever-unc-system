@@ -1,8 +1,8 @@
 import json
 
 import config
-import drqa_yixin.tokenizers
-from drqa_yixin.tokenizers import CoreNLPTokenizer
+import drqa.tokenizers
+from drqa.tokenizers import CoreNLPTokenizer
 from utils import fever_db, text_clean
 from tqdm import tqdm
 
@@ -50,7 +50,7 @@ def tokenize_doc_id(doc_id, tokenizer):
     # path_stanford_corenlp_full_2017_06_09 = str(config.PRO_ROOT / 'dep_packages/stanford-corenlp-full-2017-06-09/*')
     # print(path_stanford_corenlp_full_2017_06_09)
     #
-    # drqa_yixin.tokenizers.set_default('corenlp_classpath', path_stanford_corenlp_full_2017_06_09)
+    # drqa.tokenizers.set_default('corenlp_classpath', path_stanford_corenlp_full_2017_06_09)
     # tok = CoreNLPTokenizer(annotators=['pos', 'lemma', 'ner'])
 
     doc_id_natural_format = fever_db.convert_brc(doc_id).replace('_', ' ')
@@ -78,7 +78,7 @@ if __name__ == '__main__':
     path_stanford_corenlp_full_2017_06_09 = str(config.PRO_ROOT / 'dep_packages/stanford-corenlp-full-2017-06-09/*')
     print(path_stanford_corenlp_full_2017_06_09)
     # #
-    drqa_yixin.tokenizers.set_default('corenlp_classpath', path_stanford_corenlp_full_2017_06_09)
+    drqa.tokenizers.set_default('corenlp_classpath', path_stanford_corenlp_full_2017_06_09)
     tok = CoreNLPTokenizer(annotators=['pos', 'lemma'])
     #
     id_to_natural_id_dict = dict()

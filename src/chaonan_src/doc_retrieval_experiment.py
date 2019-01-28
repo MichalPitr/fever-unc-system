@@ -39,7 +39,7 @@ import numpy as np
 
 import config
 from sentence_retrieval.sent_tfidf import OnlineTfidfDocRanker
-from drqa_yixin.tokenizers import CoreNLPTokenizer, set_default
+from drqa.tokenizers import CoreNLPTokenizer, set_default
 from utils.c_scorer import fever_score, check_doc_id_correct
 from chaonan_src._doc_retrieval.item_rules import ItemRuleBuilder, \
                                                   ItemRuleBuilderLower, \

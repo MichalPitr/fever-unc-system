@@ -3,8 +3,8 @@ from functools import partial
 
 from flashtext import KeywordProcessor
 import config
-import drqa_yixin.tokenizers
-from drqa_yixin.tokenizers import CoreNLPTokenizer
+import drqa.tokenizers
+from drqa.tokenizers import CoreNLPTokenizer
 import utils.wiki_term_builder
 from tqdm import tqdm
 import json
@@ -18,7 +18,7 @@ import utils
 
 
 path_stanford_corenlp_full_2017_06_09 = str(config.PRO_ROOT / 'dep_packages/stanford-corenlp-full-2017-06-09/*')
-drqa_yixin.tokenizers.set_default('corenlp_classpath', path_stanford_corenlp_full_2017_06_09)
+drqa.tokenizers.set_default('corenlp_classpath', path_stanford_corenlp_full_2017_06_09)
 global_tok = CoreNLPTokenizer(annotators=['pos', 'lemma', 'ner'])
 
 
@@ -312,7 +312,7 @@ def resample_answer_with_priority(d_list, top_k=5):
 
 def used_func_for_building_normalized_key_word_index_for_docids():
     path_stanford_corenlp_full_2017_06_09 = str(config.PRO_ROOT / 'dep_packages/stanford-corenlp-full-2017-06-09/*')
-    drqa_yixin.tokenizers.set_default('corenlp_classpath', path_stanford_corenlp_full_2017_06_09)
+    drqa.tokenizers.set_default('corenlp_classpath', path_stanford_corenlp_full_2017_06_09)
     tok = CoreNLPTokenizer(annotators=['pos', 'lemma', 'ner'])
 
     did_list = get_all_doc_ids(str(config.FEVER_DB), max_ind=None)
@@ -324,7 +324,7 @@ def used_func_for_building_normalized_key_word_index_for_docids():
 def used_func_for_fast_key_word_matching():
     # Load tokenizer
     path_stanford_corenlp_full_2017_06_09 = str(config.PRO_ROOT / 'dep_packages/stanford-corenlp-full-2017-06-09/*')
-    drqa_yixin.tokenizers.set_default('corenlp_classpath', path_stanford_corenlp_full_2017_06_09)
+    drqa.tokenizers.set_default('corenlp_classpath', path_stanford_corenlp_full_2017_06_09)
     tok = CoreNLPTokenizer(annotators=['pos', 'lemma', 'ner'])
 
     keyword_processor = KeywordProcessor(case_sensitive=True)
@@ -502,7 +502,7 @@ def used_func_for_fast_key_word_matching_expanded_kw():
     """
     # Load tokenizer
     path_stanford_corenlp_full_2017_06_09 = str(config.PRO_ROOT / 'dep_packages/stanford-corenlp-full-2017-06-09/*')
-    drqa_yixin.tokenizers.set_default('corenlp_classpath', path_stanford_corenlp_full_2017_06_09)
+    drqa.tokenizers.set_default('corenlp_classpath', path_stanford_corenlp_full_2017_06_09)
     tok = CoreNLPTokenizer(annotators=['pos', 'lemma', 'ner'])
     #
     keyword_processor = KeywordProcessor(case_sensitive=True)
@@ -556,7 +556,7 @@ def used_func_for_fast_key_word_matching_prioritized_kw():
     """
     # Load tokenizer
     path_stanford_corenlp_full_2017_06_09 = str(config.PRO_ROOT / 'dep_packages/stanford-corenlp-full-2017-06-09/*')
-    drqa_yixin.tokenizers.set_default('corenlp_classpath', path_stanford_corenlp_full_2017_06_09)
+    drqa.tokenizers.set_default('corenlp_classpath', path_stanford_corenlp_full_2017_06_09)
     tok = CoreNLPTokenizer(annotators=['pos', 'lemma'])
 
     # doc_tokens, doc_lemmas = parse_doc_id('Hourglass_-LRB-James_Taylor_album-RRB-', tok)
@@ -614,7 +614,7 @@ def used_func_for_fast_key_word_matching_prioritized_kw_resample():
     """
     # Load tokenizer
     path_stanford_corenlp_full_2017_06_09 = str(config.PRO_ROOT / 'dep_packages/stanford-corenlp-full-2017-06-09/*')
-    drqa_yixin.tokenizers.set_default('corenlp_classpath', path_stanford_corenlp_full_2017_06_09)
+    drqa.tokenizers.set_default('corenlp_classpath', path_stanford_corenlp_full_2017_06_09)
     tok = CoreNLPTokenizer(annotators=['pos', 'lemma'])
 
     # doc_tokens, doc_lemmas = parse_doc_id('Hourglass_-LRB-James_Taylor_album-RRB-', tok)

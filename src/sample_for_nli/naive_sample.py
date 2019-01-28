@@ -4,8 +4,8 @@ import copy
 
 from utils import fever_db, check_sentences
 import config
-import drqa_yixin.tokenizers
-from drqa_yixin.tokenizers import CoreNLPTokenizer
+import drqa.tokenizers
+from drqa.tokenizers import CoreNLPTokenizer
 from tqdm import tqdm
 from utils import c_scorer, text_clean
 from utils import common
@@ -13,7 +13,7 @@ from utils import common
 path_stanford_corenlp_full_2017_06_09 = str(config.PRO_ROOT / 'dep_packages/stanford-corenlp-full-2017-06-09/*')
 print(path_stanford_corenlp_full_2017_06_09)
 
-drqa_yixin.tokenizers.set_default('corenlp_classpath', path_stanford_corenlp_full_2017_06_09)
+drqa.tokenizers.set_default('corenlp_classpath', path_stanford_corenlp_full_2017_06_09)
 tok = CoreNLPTokenizer(annotators=['pos', 'lemma'])
 
 random.seed = 12

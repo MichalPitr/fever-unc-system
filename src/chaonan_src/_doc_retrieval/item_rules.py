@@ -9,7 +9,7 @@ from flashtext import KeywordProcessor
 import inflection
 
 import config
-from drqa_yixin.tokenizers import CoreNLPTokenizer, set_default
+from drqa.tokenizers import CoreNLPTokenizer, set_default
 from utils import common, wiki_term_builder
 from utils.text_clean import STOPWORDS
 from doc_retrieval.fast_key_word_matching_v1_3 import \

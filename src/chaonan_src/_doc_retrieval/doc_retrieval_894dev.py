@@ -38,7 +38,7 @@ import inflection
 
 import config
 from sentence_retrieval.sent_tfidf import OnlineTfidfDocRanker
-from drqa_yixin.tokenizers import CoreNLPTokenizer, set_default
+from drqa.tokenizers import CoreNLPTokenizer, set_default
 import utils
 from utils import common
 from utils.c_scorer import fever_score, check_doc_id_correct
