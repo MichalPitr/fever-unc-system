@@ -18,9 +18,9 @@ from multiprocessing.util import Finalize
 from functools import partial
 from collections import Counter
 
-from drqa_yixin import retriever
-from drqa_yixin import tokenizers
-from drqa_yixin.tokenizers import tokenizer
+from drqa import retriever
+from drqa import tokenizers
+from drqa.tokenizers import tokenizer
 
 logger = logging.getLogger("DRQA")
 

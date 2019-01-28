@@ -14,10 +14,10 @@ from multiprocessing.pool import ThreadPool
 from functools import partial
 
 import math
-from drqa_yixin.retriever import utils
+from drqa.retriever import utils
 
 from sentence_retrieval.build_tfidf_yixin import get_count_matrix, get_tfidf_matrix, get_doc_freqs
-from drqa_yixin.tokenizers import tokenizer
+from drqa.tokenizers import tokenizer
 
 
 logger = logging.getLogger(__name__)

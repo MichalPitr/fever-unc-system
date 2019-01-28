@@ -1,8 +1,8 @@
 import json
 
 import config
-import drqa_yixin.tokenizers
-from drqa_yixin.tokenizers import CoreNLPTokenizer
+import drqa.tokenizers
+from drqa.tokenizers import CoreNLPTokenizer
 from utils import fever_db, text_clean
 from tqdm import tqdm
 import gc
@@ -33,7 +33,7 @@ def load_jsonl(filename):
 def tokenized_claim(in_file, out_file):
     path_stanford_corenlp_full_2017_06_09 = str(config.PRO_ROOT / 'dep_packages/stanford-corenlp-full-2017-06-09/*')
     print(path_stanford_corenlp_full_2017_06_09)
-    drqa_yixin.tokenizers.set_default('corenlp_classpath', path_stanford_corenlp_full_2017_06_09)
+    drqa.tokenizers.set_default('corenlp_classpath', path_stanford_corenlp_full_2017_06_09)
     tok = CoreNLPTokenizer(annotators=['pos', 'lemma'])
     tok._convert = lambda a:a
 
@@ -48,7 +48,7 @@ def tokenized_claim(in_file, out_file):
 
 def tokenized_claim_list(in_list):
     path_stanford_corenlp_full_2017_06_09 = str(config.PRO_ROOT / 'dep_packages/stanford-corenlp-full-2017-06-09/*')
-    drqa_yixin.tokenizers.set_default('corenlp_classpath', path_stanford_corenlp_full_2017_06_09)
+    drqa.tokenizers.set_default('corenlp_classpath', path_stanford_corenlp_full_2017_06_09)
     tok = CoreNLPTokenizer(annotators=['pos', 'lemma'])
     tok._convert = lambda a:a
     for item in tqdm(in_list):
