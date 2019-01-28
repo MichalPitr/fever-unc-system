@@ -17,7 +17,7 @@ def easy_tokenize(text, tok):
 def save_jsonl(d_list, filename):
 
     log = LogHelper.get_logger("data-io")
-    log.info("Save to Jsonl: {0}", filename)
+    log.info("Save to Jsonl: {0}".format(filename))
     with open(filename, encoding='utf-8', mode='w') as out_f:
         for item in d_list:
             out_f.write(json.dumps(item) + '\n')
@@ -27,7 +27,7 @@ def load_jsonl(filename):
     d_list = []
     log = LogHelper.get_logger("data-io")
     with open(filename, encoding='utf-8', mode='r') as in_f:
-        log.info("Read from JSONL file: {0}", filename)
+        log.info("Read from JSONL file: {0}".format(filename))
         for line in tqdm(in_f):
             item = json.loads(line.strip())
             d_list.append(item)
