@@ -250,7 +250,7 @@ def pipeline(in_file, eval_file=None,
 
 
     if steps['s3.1sen_select']['ensemble']:
-        print("Ensemble!")
+        logs.info("Ensemble!")
         dev_sent_list_1_e1 = simple_nnmodel.pipeline_first_sent_selection(tokenized_file, nn_doc_retrieval_file_1,
                                                                           model_path_dict['sselector_1'],
                                                                           top_k=nn_doc_top_k)
@@ -270,14 +270,9 @@ def pipeline(in_file, eval_file=None,
         dev_sent_list_1 = dev_sent_list_1_e0
         dev_sent_file_1 = dev_sent_file_1_e0
 
-    print("First Sentence Selection file saved to:", dev_sent_file_1)
+        logs.info("First Sentence Selection file saved to:", dev_sent_file_1)
 
-
-
-
-
-
-    print("Step 4. Second Document Retrieval")
+    logs.info("Step 4. Second Document Retrieval")
     if steps['s4.2doc_retri']['do']:
         dev_sent_list_1 = common.load_jsonl(dev_sent_file_1)
         filtered_dev_instance_1_for_doc2 = simi_sampler.threshold_sampler_insure_unique(tokenized_file,
@@ -303,7 +298,7 @@ def pipeline(in_file, eval_file=None,
         # dev_doc2_list = common.load_jsonl(dev_doc2_file)
         print("Use preprocessed file:", dev_doc2_file)
 
-    print("Step 5. Second Sentence Selection")
+    logs.info("Step 5. Second Sentence Selection")
     if steps['s5.2sen_select']['do']:
         dev_sent_2_list = get_score_multihop(tokenized_file,
                                              dev_doc2_file,
@@ -315,13 +310,11 @@ def pipeline(in_file, eval_file=None,
     else:
         dev_sent_file_2 = steps['s5.2sen_select']['out_file']
 
-
-
-    print("Step 6. NLI")
+    logs.info("Step 6. NLI")
     dev_sent_list_1 = common.load_jsonl(dev_sent_file_1)
     dev_sent_list_2 = common.load_jsonl(dev_sent_file_2)
     sentence_retri_1_scale_prob = 0.1
-    print("Threshold:", sentence_retri_1_scale_prob)
+    logs.info("Threshold: {0}".format( sentence_retri_1_scale_prob))
     sent_select_results_list_1 = simi_sampler.threshold_sampler_insure_unique(tokenized_file, dev_sent_list_1,
                                                                               sentence_retri_1_scale_prob, top_n=5)
 
@@ -338,15 +331,14 @@ def pipeline(in_file, eval_file=None,
     nli_results_file = current_pipeline_dir / f"single_sent_nli_r_{in_file_stem}_with_doc_scale:{sentence_retri_1_scale_prob}_e0.jsonl"
     common.save_jsonl(nli_results, nli_results_file)
 
-
-    print("Post Processing enhancement")
+    logs.info("Post Processing enhancement")
     delete_unused_evidence(nli_results)
-    print("Deleting Useless Evidence")
+    logs.info("Deleting Useless Evidence")
     #
     # dev_sent_list_1 = common.load_jsonl(dev_sent_file_1)
     # dev_sent_list_2 = common.load_jsonl(dev_sent_file_2)
     #
-    print("Appending 1 of second Evidence")
+    logs.info("Appending 1 of second Evidence")
     nli_results = simi_sampler.threshold_sampler_insure_unique_merge(nli_results,
                                                                      dev_sent_list_2,
                                                                      sentence_retri_2_scale_prob,
@@ -355,8 +347,8 @@ def pipeline(in_file, eval_file=None,
     delete_unused_evidence(nli_results)
     #
     # High tolerance enhancement!
-    print("Final High Tolerance Enhancement")
-    print("Appending all of first Evidence")
+    logs.info("Final High Tolerance Enhancement")
+    logs.info("Appending all of first Evidence")
     nli_results = simi_sampler.threshold_sampler_insure_unique_merge(nli_results,
                                                                      dev_sent_list_1,
                                                                      enhance_retri_1_scale_prob,
