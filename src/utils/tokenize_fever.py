@@ -47,6 +47,7 @@ def tokenized_claim(in_file, out_file):
         item['claim'] = ' '.join(easy_tokenize(item['claim'], tok))
 
     save_jsonl(d_list, out_file)
+    tok.shutdown()
     del tok
     gc.collect()
 
@@ -59,8 +60,10 @@ def tokenized_claim_list(in_list):
     for item in tqdm(in_list):
         item['claim'] = ' '.join(easy_tokenize(item['claim'], tok))
 
+    tok.shutdown()
     del tok
     gc.collect()
+
     return in_list
 
 
