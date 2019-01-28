@@ -417,6 +417,6 @@ if __name__ == '__main__':
     args = parser.parse_args()
     pipeline(args.in_file,
              args.out_file,
-             args.working-dir,
+             args.working_dir,
              model_path_dict=default_model_path_dict,
              steps=default_steps)
