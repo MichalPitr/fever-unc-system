@@ -348,13 +348,14 @@ def pipeline(in_file,
 
     delete_unused_evidence(nli_results)
 
-    eval_mode = {'standard': True}
     for item in nli_results:
         del item['label']
-    #
-    # if build_submission:
-    #     output_file = current_pipeline_dir / "predictions.jsonl"
-    #     build_submission_file(nli_results, output_file)
+
+    output_file = output_file
+    build_submission_file(nli_results, output_file)
+
+    output_file = working_dir / "predictions.jsonl"
+    build_submission_file(nli_results, output_file)
 
 
 def pipeline_tokenize(in_file, out_file):
@@ -412,10 +413,10 @@ if __name__ == '__main__':
     parser = ArgumentParser()
     parser.add_argument("--in-file",type=str, required=True)
     parser.add_argument("--out-file",type=str, required=True)
-    parser.add_argument("--data-root",type=str, required=True)
+    parser.add_argument("--working-dir",type=str, required=True)
     args = parser.parse_args()
     pipeline(args.in_file,
              args.out_file,
-             args.data_root,
+             args.working-dir,
              model_path_dict=default_model_path_dict,
              steps=default_steps)
