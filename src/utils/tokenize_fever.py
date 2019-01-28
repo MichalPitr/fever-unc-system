@@ -7,6 +7,7 @@ from utils import fever_db, text_clean
 from tqdm import tqdm
 import gc
 
+
 def easy_tokenize(text, tok):
     return tok.tokenize(text_clean.normalize(text)).words()
 

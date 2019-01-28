@@ -21,7 +21,10 @@ import json
 import numpy as np
 import nn_doc_retrieval.disabuigation_training as disamb
 from nn_doc_retrieval import nn_doc_model
+from log_helper import LogHelper
 
+LogHelper.setup()
+logs  = LogHelper.get_logger("pipeline")
 PIPELINE_DIR = config.RESULT_PATH / "pipeline_r_aaai_doc"
 
 default_model_path_dict: Dict[str, str] = {
@@ -161,6 +164,10 @@ def pipeline(in_file, eval_file=None,
     :param eval_file: Whether to provide evaluation along the line.
     :return:
     """
+
+    logs = LogHelper.get_logger("unc-pipeline")
+
+    logs.info("Start pipeline")
     # sentence_retri_1_scale_prob = 0.5
     sentence_retri_1_scale_prob = 0.05
     sent_retri_1_top_k = 5
@@ -189,13 +196,15 @@ def pipeline(in_file, eval_file=None,
     if not PIPELINE_DIR.exists():
         PIPELINE_DIR.mkdir()
 
+
+    logs.info("Set up directory for results")
     if steps['s1.tokenizing']['do']:
         time_stamp = utils.get_current_time_str()
         current_pipeline_dir = PIPELINE_DIR / f"{time_stamp}_r"
     else:
         current_pipeline_dir = steps['s1.tokenizing']['out_file'].parent
 
-    print("Current Result Root:", current_pipeline_dir)
+    logs.info("Current Result Root: {0}".format(current_pipeline_dir))
 
     if not current_pipeline_dir.exists():
         current_pipeline_dir.mkdir()
@@ -213,13 +222,15 @@ def pipeline(in_file, eval_file=None,
     # Preparing finished
 
     # Tokenizing.
-    print("Step 1. Tokenizing.")
+    logs.info("Step 1. Tokenizing.")
     if steps['s1.tokenizing']['do']:
+        logs.info("Start new tokenization")
         tokenized_claim(in_file, tokenized_file)  # Auto Saved
         print("Tokenized file saved to:", tokenized_file)
     else:
+        logs.info("Use existing file: {0}".format(steps['s1.tokenizing']['out_file'].parent))
         tokenized_file = steps['s1.tokenizing']['out_file']
-        print("Use preprocessed file:", tokenized_file)
+        logs.info("Loaded preprocessed file:", tokenized_file)
     # Tokenizing End.
 
     # First Document retrieval.
