@@ -234,11 +234,11 @@ def pipeline(in_file, eval_file=None,
     # Tokenizing End.
 
 
-    input()
     # First Document retrieval.
     logs.info("Step 2. First Document Retrieval")
 
     if steps['s2.1doc_retri']['do']:
+        logs.info("Running document retrieval")
         doc_retrieval_result_list = first_doc_retrieval(haonan_docretri_object, tokenized_file,
                                                         method=doc_retrieval_method, top_k=100)
         doc_retrieval_file_1 = current_pipeline_dir / f"doc_retr_1_{in_file_stem}.jsonl"

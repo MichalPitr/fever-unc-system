@@ -759,7 +759,8 @@ def pipeline_function(upstream_file, model_path):
                   vocab_size=vocab.get_vocab_size('tokens'),
                   embedding_dim=300, max_l=160, num_of_class=2)
 
-    model.load_state_dict(torch.load(model_path))
+    options = {"map_location":"cpu"} if not torch.cuda.is_available() else {}
+    model.load_state_dict(torch.load(model_path,**options))
     model.display()
     model.to(device)
 
