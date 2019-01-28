@@ -3,6 +3,8 @@ import json
 import config
 import drqa.tokenizers
 from drqa.tokenizers import CoreNLPTokenizer
+
+from log_helper import LogHelper
 from utils import fever_db, text_clean
 from tqdm import tqdm
 import gc
@@ -13,7 +15,9 @@ def easy_tokenize(text, tok):
 
 
 def save_jsonl(d_list, filename):
-    print("Save to Jsonl:", filename)
+
+    log = LogHelper.get_logger("data-io")
+    log.info("Save to Jsonl:", filename)
     with open(filename, encoding='utf-8', mode='w') as out_f:
         for item in d_list:
             out_f.write(json.dumps(item) + '\n')
@@ -21,8 +25,9 @@ def save_jsonl(d_list, filename):
 
 def load_jsonl(filename):
     d_list = []
+    log = LogHelper.get_logger("data-io")
     with open(filename, encoding='utf-8', mode='r') as in_f:
-        print("Load Jsonl:", filename)
+        log.info("Read from JSONL file:", filename)
         for line in tqdm(in_f):
             item = json.loads(line.strip())
             d_list.append(item)
