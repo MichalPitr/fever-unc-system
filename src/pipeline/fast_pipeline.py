@@ -1,4 +1,5 @@
 import os
+from argparse import ArgumentParser
 
 from chaonan_src.doc_retrieval_experiment import DocRetrievalExperimentSpiral, DocRetrievalExperiment, \
     DocRetrievalExperimentTwoStep
@@ -25,7 +26,6 @@ from log_helper import LogHelper
 
 LogHelper.setup()
 logs  = LogHelper.get_logger("pipeline")
-PIPELINE_DIR = config.RESULT_PATH / "pipeline_r_aaai_doc"
 
 default_model_path_dict: Dict[str, str] = {
     'sselector': config.PRO_ROOT / 'saved_models/saved_sselector/i(57167)_epoch(6)_(tra_score:0.8850885088508851|raw_acc:1.0|pr:0.3834395939593578|rec:0.8276327632763276|f1:0.5240763176570098)_epoch',
@@ -145,9 +145,11 @@ def init_haonan_docretri_object(object, method='pageview'):
         object.instance = DocRetrievalExperimentTwoStep(item_rb_selector())
 
 
-def pipeline(in_file, eval_file=None,
-             model_path_dict=default_model_path_dict,
-             steps=default_steps):
+def pipeline(in_file,
+             out_file,
+             working_dir,
+             model_path_dict,
+             steps):
     """
     :param in_file: The raw input file.
     :param eval_file: Whether to provide evaluation along the line.
@@ -175,25 +177,18 @@ def pipeline(in_file, eval_file=None,
 
 
     doc_retrieval_method = 'pageview'
-
     haonan_docretri_object = HAONAN_DOCRETRI_OBJECT()
 
-    if not PIPELINE_DIR.exists():
-        PIPELINE_DIR.mkdir()
+    if not working_dir.exists():
+        working_dir.mkdir()
+
+    logs.info("Current Result Root: {0}".format(working_dir))
 
 
-    ## Create results directory
-    logs.info("Set up directory for results")
-    time_stamp = utils.get_current_time_str()
-    current_pipeline_dir = PIPELINE_DIR / f"{time_stamp}_r"
-    logs.info("Current Result Root: {0}".format(current_pipeline_dir))
-
-    if not current_pipeline_dir.exists():
-        current_pipeline_dir.mkdir()
 
 
     in_file_stem = in_file.stem
-    tokenized_file = current_pipeline_dir / f"t_{in_file_stem}.jsonl"
+    tokenized_file = working_dir / f"t_{in_file_stem}.jsonl"
 
 
     ## Tokenize claims for documents
@@ -203,15 +198,13 @@ def pipeline(in_file, eval_file=None,
 
     ## Document retrieval.
     logs.info("Step 2. First Document Retrieval")
-
     logs.info("Running first doc retrieval ")
     doc_retrieval_result_list = first_doc_retrieval(haonan_docretri_object, tokenized_file,
                                                     method=doc_retrieval_method, top_k=100)
 
     logs.info("Saving first doc retrieval file")
-    doc_retrieval_file_1 = current_pipeline_dir / f"doc_retr_1_{in_file_stem}.jsonl"
+    doc_retrieval_file_1 = working_dir / f"doc_retr_1_{in_file_stem}.jsonl"
     common.save_jsonl(doc_retrieval_result_list, doc_retrieval_file_1)
-
 
     logs.info("Removing old rules")
     disamb.item_remove_old_rule(doc_retrieval_result_list)
@@ -219,12 +212,11 @@ def pipeline(in_file, eval_file=None,
     logs.info("Resorting")
     disamb.item_resorting(doc_retrieval_result_list)
 
-
     logs.info("Run NN doc model")
     nn_doc_list = nn_doc_model.pipeline_function(doc_retrieval_file_1, model_path_dict['nn_doc_selector'])
 
     logs.info("Save NN model result")
-    nn_doc_file = current_pipeline_dir / f"nn_doc_list_1_{in_file_stem}.jsonl"
+    nn_doc_file = working_dir / f"nn_doc_list_1_{in_file_stem}.jsonl"
     common.save_jsonl(nn_doc_list, nn_doc_file)
     nn_doc_list = common.load_jsonl(nn_doc_file)
 
@@ -232,9 +224,8 @@ def pipeline(in_file, eval_file=None,
     disamb.enforce_disabuigation_into_retrieval_result_v2(nn_doc_list,
                                                           doc_retrieval_result_list, prob_sh=nn_doc_retri_threshold)
 
-
     logs.info("Save disambiguation")
-    nn_doc_retrieval_file_1 = current_pipeline_dir / f"nn_doc_retr_1_{in_file_stem}.jsonl"
+    nn_doc_retrieval_file_1 = working_dir / f"nn_doc_retr_1_{in_file_stem}.jsonl"
     common.save_jsonl(doc_retrieval_result_list, nn_doc_retrieval_file_1)
 
 
@@ -244,7 +235,7 @@ def pipeline(in_file, eval_file=None,
     dev_sent_list_1_e0 = simple_nnmodel.pipeline_first_sent_selection(tokenized_file, nn_doc_retrieval_file_1,
                                                                       model_path_dict['sselector'],
                                                                       top_k=nn_doc_top_k)
-    dev_sent_file_1_e0 = current_pipeline_dir / f"dev_sent_score_1_{in_file_stem}_docnum({nn_doc_top_k}).jsonl"
+    dev_sent_file_1_e0 = working_dir / f"dev_sent_score_1_{in_file_stem}_docnum({nn_doc_top_k}).jsonl"
     common.save_jsonl(dev_sent_list_1_e0, dev_sent_file_1_e0)
 
 
@@ -254,16 +245,16 @@ def pipeline(in_file, eval_file=None,
         dev_sent_list_1_e1 = simple_nnmodel.pipeline_first_sent_selection(tokenized_file, nn_doc_retrieval_file_1,
                                                                           model_path_dict['sselector_1'],
                                                                           top_k=nn_doc_top_k)
-        dev_sent_file_1_e1 = current_pipeline_dir / f"dev_sent_score_1_{in_file_stem}_docnum({nn_doc_top_k})_e1.jsonl"
+        dev_sent_file_1_e1 = working_dir / f"dev_sent_score_1_{in_file_stem}_docnum({nn_doc_top_k})_e1.jsonl"
         common.save_jsonl(dev_sent_list_1_e1, dev_sent_file_1_e1)
         dev_sent_list_1_e2 = simple_nnmodel.pipeline_first_sent_selection(tokenized_file, nn_doc_retrieval_file_1,
                                                                           model_path_dict['sselector_2'],
                                                                           top_k=nn_doc_top_k)
-        dev_sent_file_1_e2 = current_pipeline_dir / f"dev_sent_score_1_{in_file_stem}_docnum({nn_doc_top_k})_e2.jsonl"
+        dev_sent_file_1_e2 = working_dir / f"dev_sent_score_1_{in_file_stem}_docnum({nn_doc_top_k})_e2.jsonl"
         common.save_jsonl(dev_sent_list_1_e2, dev_sent_file_1_e2)
 
         dev_sent_list_1 = merge_sent_results([dev_sent_list_1_e0, dev_sent_list_1_e1, dev_sent_list_1_e2])
-        dev_sent_file_1 = current_pipeline_dir / f"dev_sent_score_1_{in_file_stem}_docnum({nn_doc_top_k})_ensembled.jsonl"
+        dev_sent_file_1 = working_dir / f"dev_sent_score_1_{in_file_stem}_docnum({nn_doc_top_k})_ensembled.jsonl"
         common.save_jsonl(dev_sent_list_1, dev_sent_file_1)
         # exit(0)
     else:
@@ -279,7 +270,7 @@ def pipeline(in_file, eval_file=None,
                                                                                         dev_sent_list_1,
                                                                                         sent_prob_for_2doc,
                                                                                         top_n=sent_topk_for_2doc)
-        filtered_dev_instance_1_for_doc2_file = current_pipeline_dir / f"dev_sent_score_1_{in_file_stem}_scaled_for_doc2.jsonl"
+        filtered_dev_instance_1_for_doc2_file = working_dir / f"dev_sent_score_1_{in_file_stem}_scaled_for_doc2.jsonl"
         common.save_jsonl(filtered_dev_instance_1_for_doc2, filtered_dev_instance_1_for_doc2_file)
 
         dev_sent_1_result = simi_sampler.threshold_sampler_insure_unique(doc_retrieval_file_1,  # Remember this name
@@ -290,7 +281,7 @@ def pipeline(in_file, eval_file=None,
         dev_doc2_list = second_doc_retrieval(haonan_docretri_object, filtered_dev_instance_1_for_doc2_file,
                                              dev_sent_1_result)
 
-        dev_doc2_file = current_pipeline_dir / f"doc_retr_2_{in_file_stem}.jsonl"
+        dev_doc2_file = working_dir / f"doc_retr_2_{in_file_stem}.jsonl"
         common.save_jsonl(dev_doc2_list, dev_doc2_file)
         print("Second Document Retrieval File saved to:", dev_doc2_file)
     else:
@@ -304,7 +295,7 @@ def pipeline(in_file, eval_file=None,
                                              dev_doc2_file,
                                              model_path=model_path_dict['sselector'])
 
-        dev_sent_file_2 = current_pipeline_dir / f"dev_sent_score_2_{in_file_stem}.jsonl"
+        dev_sent_file_2 = working_dir / f"dev_sent_score_2_{in_file_stem}.jsonl"
         common.save_jsonl(dev_sent_2_list, dev_sent_file_2)
         print("First Sentence Selection file saved to:", dev_sent_file_2)
     else:
@@ -328,7 +319,7 @@ def pipeline(in_file, eval_file=None,
                                                           load_from_dict=False)
 
 
-    nli_results_file = current_pipeline_dir / f"single_sent_nli_r_{in_file_stem}_with_doc_scale:{sentence_retri_1_scale_prob}_e0.jsonl"
+    nli_results_file = working_dir / f"single_sent_nli_r_{in_file_stem}_with_doc_scale:{sentence_retri_1_scale_prob}_e0.jsonl"
     common.save_jsonl(nli_results, nli_results_file)
 
     logs.info("Post Processing enhancement")
@@ -418,7 +409,13 @@ def delete_unused_evidence(d_list):
 
 
 if __name__ == '__main__':
-    pipeline(config.DATA_ROOT / "fever/shared_task_dev.jsonl",
-             eval_file=config.DATA_ROOT / "fever/shared_task_dev.jsonl",
+    parser = ArgumentParser()
+    parser.add_argument("--in-file",type=str, required=True)
+    parser.add_argument("--out-file",type=str, required=True)
+    parser.add_argument("--data-root",type=str, required=True)
+    args = parser.parse_args()
+    pipeline(args.in_file,
+             args.out_file,
+             args.data_root,
              model_path_dict=default_model_path_dict,
              steps=default_steps)

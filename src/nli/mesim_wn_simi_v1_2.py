@@ -346,10 +346,10 @@ def eval_fever():
 
     criterion = nn.CrossEntropyLoss()
 
-    eval_iter = biterator(mnli_m_dev_instances, shuffle=False, num_epochs=1, cuda_device=device_num)
+    eval_iter = biterator(mnli_m_dev_instances, shuffle=False, num_epochs=1)
     m_dev_score, m_dev_loss = eval_model(model, eval_iter, criterion)
 
-    eval_iter = biterator(mnli_um_dev_instances, shuffle=False, num_epochs=1, cuda_device=device_num)
+    eval_iter = biterator(mnli_um_dev_instances, shuffle=False, num_epochs=1)
     um_dev_score, um_dev_loss = eval_model(model, eval_iter, criterion)
 
     print(f"Dev(M):{m_dev_score}/{m_dev_loss}")
