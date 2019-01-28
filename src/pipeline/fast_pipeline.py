@@ -203,25 +203,37 @@ def pipeline(in_file, eval_file=None,
 
     ## Document retrieval.
     logs.info("Step 2. First Document Retrieval")
+
+    logs.info("Running first doc retrieval ")
     doc_retrieval_result_list = first_doc_retrieval(haonan_docretri_object, tokenized_file,
                                                     method=doc_retrieval_method, top_k=100)
+
+    logs.info("Saving first doc retrieval file")
     doc_retrieval_file_1 = current_pipeline_dir / f"doc_retr_1_{in_file_stem}.jsonl"
     common.save_jsonl(doc_retrieval_result_list, doc_retrieval_file_1)
 
+
+    logs.info("Removing old rules")
     disamb.item_remove_old_rule(doc_retrieval_result_list)
+
+    logs.info("Resorting")
     disamb.item_resorting(doc_retrieval_result_list)
 
 
-
+    logs.info("Run NN doc model")
     nn_doc_list = nn_doc_model.pipeline_function(doc_retrieval_file_1, model_path_dict['nn_doc_selector'])
+
+    logs.info("Save NN model result")
     nn_doc_file = current_pipeline_dir / f"nn_doc_list_1_{in_file_stem}.jsonl"
     common.save_jsonl(nn_doc_list, nn_doc_file)
     nn_doc_list = common.load_jsonl(nn_doc_file)
 
+    logs.info("Disambiguation result")
     disamb.enforce_disabuigation_into_retrieval_result_v2(nn_doc_list,
                                                           doc_retrieval_result_list, prob_sh=nn_doc_retri_threshold)
 
 
+    logs.info("Save disambiguation")
     nn_doc_retrieval_file_1 = current_pipeline_dir / f"nn_doc_retr_1_{in_file_stem}.jsonl"
     common.save_jsonl(doc_retrieval_result_list, nn_doc_retrieval_file_1)
 

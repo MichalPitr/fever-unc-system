@@ -31,7 +31,10 @@ def spcl(iter, every=5, timeit=True):
       if (i+1) % every == 0 or (i+1) == len(iter):
         prev_time = curr_time
         curr_time = time.time()
-        info_str = f"\rProcessed {i+1}/{len(iter)}; "
+        info_str = f"\r" \
+          f"" \
+          f"" \
+          f"Processed {i+1}/{len(iter)}; "
         if timeit:
           info_str += f"Time {(curr_time - prev_time):.6f}" \
                       f" / {(curr_time - start_time):.6f} s"

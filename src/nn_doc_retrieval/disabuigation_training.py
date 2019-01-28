@@ -6,7 +6,7 @@ import random
 
 
 def item_resorting(d_list, top_k=None):
-    for item in d_list:
+    for item in tqdm(d_list):
         t_claim = ' '.join(item['claim_tokens'])
         item['predicted_docids'] = []
         # for it in item['prioritized_docids']:
