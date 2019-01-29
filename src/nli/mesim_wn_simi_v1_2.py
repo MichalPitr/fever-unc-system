@@ -31,7 +31,7 @@ from tqdm import tqdm
 from neural_modules import biDafAttn
 from utils import c_scorer
 from wn_featurizer import wn_persistent_api
-
+from allennlp.nn import util
 
 class ESIM(nn.Module):
     # This is ESIM sequence matching model
@@ -368,7 +368,7 @@ def get_actual_data(tokenized_data_file, additional_data_file):
     return actual_d_list
 
 
-def hidden_eval(model, data_iter, dev_data_list, with_logits=False, with_probs=False):
+def hidden_eval(model, data_iter, dev_data_list, cuda_device, with_logits=False, with_probs=False):
     # SUPPORTS < (-.-) > 0
     # REFUTES < (-.-) > 1
     # NOT ENOUGH INFO < (-.-) > 2
@@ -394,7 +394,8 @@ def hidden_eval(model, data_iter, dev_data_list, with_logits=False, with_probs=F
         # y_hypothesis = []
 
         for batch_idx, batch in enumerate(tqdm(data_iter)):
-            out = model(batch)
+            model_in = util.move_to_device(batch.as_tensor_dict(), cuda_device)
+            out = model.forward_on_instances(model_in)
             y_id_list.extend(list(batch['pid']))
 
             # if append_text:
@@ -2217,6 +2218,7 @@ def pipeline_nli_run(t_org_file, upstream_dev_data_list, upstream_sent_file_list
 
     eval_iter = biterator(dev_instances, shuffle=False, num_epochs=1)
     complete_upstream_dev_data = hidden_eval(model, eval_iter, complete_upstream_dev_data,
+                                             cuda_device=device_num,
                                              with_logits=with_logits,
                                              with_probs=with_probs)
 
