@@ -485,7 +485,7 @@ def hidden_eval_fever():
     model.display()
     model.to(device)
 
-    eval_iter = biterator(dev_instances, shuffle=False, num_epochs=1, cuda_device=device_num)
+    eval_iter = biterator(dev_instances, shuffle=False, num_epochs=1)
     builded_dev_data = hidden_eval(model, eval_iter, complete_upstream_dev_data)
 
     eval_mode = {'check_sent_id_correct': True, 'standard': True}
@@ -551,7 +551,7 @@ def hidden_eval_fever_adv_v1():
     model.display()
     model.to(device)
 
-    eval_iter = biterator(dev_instances, shuffle=False, num_epochs=1, cuda_device=device_num)
+    eval_iter = biterator(dev_instances, shuffle=False, num_epochs=1)
     builded_dev_data = hidden_eval(model, eval_iter, complete_upstream_dev_data)
 
     eval_mode = {'check_sent_id_correct': True, 'standard': True}
@@ -633,7 +633,7 @@ def train_fever():
 
         sampled_train_instances = train_fever_data_reader.read(complete_upstream_train_data)
 
-        train_iter = biterator(sampled_train_instances, shuffle=True, num_epochs=1, cuda_device=device_num)
+        train_iter = biterator(sampled_train_instances, shuffle=True, num_epochs=1)
         for i, batch in tqdm(enumerate(train_iter)):
             model.train()
             out = model(batch)
@@ -654,7 +654,7 @@ def train_fever():
                 mod = 500
 
             if iteration % mod == 0:
-                eval_iter = biterator(dev_instances, shuffle=False, num_epochs=1, cuda_device=device_num)
+                eval_iter = biterator(dev_instances, shuffle=False, num_epochs=1)
                 dev_score, dev_loss = full_eval_model(model, eval_iter, criterion, complete_upstream_dev_data)
 
                 print(f"Dev:{dev_score}/{dev_loss}")
@@ -790,7 +790,7 @@ def train_fever_v1_advsample():
         print("Sample data length:", len(complete_upstream_train_data))
         sampled_train_instances = train_fever_data_reader.read(complete_upstream_train_data)
 
-        train_iter = biterator(sampled_train_instances, shuffle=True, num_epochs=1, cuda_device=device_num)
+        train_iter = biterator(sampled_train_instances, shuffle=True, num_epochs=1)
         for i, batch in tqdm(enumerate(train_iter)):
             model.train()
             out = model(batch)
@@ -811,7 +811,7 @@ def train_fever_v1_advsample():
                 mod = 500
 
             if iteration % mod == 0:
-                eval_iter = biterator(dev_instances, shuffle=False, num_epochs=1, cuda_device=device_num)
+                eval_iter = biterator(dev_instances, shuffle=False, num_epochs=1)
                 dev_score, dev_loss = full_eval_model(model, eval_iter, criterion, complete_upstream_dev_data)
 
                 print(f"Dev:{dev_score}/{dev_loss}")
@@ -948,7 +948,7 @@ def train_fever_v1_advsample_v2_shuffle_bigger():
         print("Sample data length:", len(complete_upstream_train_data))
         sampled_train_instances = train_fever_data_reader.read(complete_upstream_train_data)
 
-        train_iter = biterator(sampled_train_instances, shuffle=True, num_epochs=1, cuda_device=device_num)
+        train_iter = biterator(sampled_train_instances, shuffle=True, num_epochs=1)
         for i, batch in tqdm(enumerate(train_iter)):
             model.train()
             out = model(batch)
@@ -969,7 +969,7 @@ def train_fever_v1_advsample_v2_shuffle_bigger():
                 mod = 1000
 
             if iteration % mod == 0:
-                eval_iter = biterator(dev_instances, shuffle=False, num_epochs=1, cuda_device=device_num)
+                eval_iter = biterator(dev_instances, shuffle=False, num_epochs=1)
                 dev_score, dev_loss = full_eval_model(model, eval_iter, criterion, complete_upstream_dev_data)
 
                 print(f"Dev:{dev_score}/{dev_loss}")
@@ -1113,7 +1113,7 @@ def train_fever_v1_advsample_v2_shuffle_bigger_ema():
         print("Sample data length:", len(complete_upstream_train_data))
         sampled_train_instances = train_fever_data_reader.read(complete_upstream_train_data)
 
-        train_iter = biterator(sampled_train_instances, shuffle=True, num_epochs=1, cuda_device=device_num)
+        train_iter = biterator(sampled_train_instances, shuffle=True, num_epochs=1)
         for i, batch in tqdm(enumerate(train_iter)):
             model.train()
             out = model(batch)
@@ -1133,7 +1133,7 @@ def train_fever_v1_advsample_v2_shuffle_bigger_ema():
             mod = 500
 
             if iteration % mod == 0:
-                eval_iter = biterator(dev_instances, shuffle=False, num_epochs=1, cuda_device=device_num)
+                eval_iter = biterator(dev_instances, shuffle=False, num_epochs=1)
                 complete_upstream_dev_data = hidden_eval(model, eval_iter, complete_upstream_dev_data)
 
                 eval_mode = {'check_sent_id_correct': True, 'standard': True}
@@ -1153,7 +1153,7 @@ def train_fever_v1_advsample_v2_shuffle_bigger_ema():
                 torch.save(model.state_dict(), save_path)
 
                 # EMA saving
-                eval_iter = biterator(dev_instances, shuffle=False, num_epochs=1, cuda_device=device_num)
+                eval_iter = biterator(dev_instances, shuffle=False, num_epochs=1)
                 load_ema_to_model(cloned_empty_model, ema)
                 complete_upstream_dev_data = hidden_eval(cloned_empty_model, eval_iter, complete_upstream_dev_data)
 
@@ -1298,7 +1298,7 @@ def train_fever_v1_advsample_v2_shuffle_std_ema(resume_model=None):
         print("Sample data length:", len(complete_upstream_train_data))
         sampled_train_instances = train_fever_data_reader.read(complete_upstream_train_data)
 
-        train_iter = biterator(sampled_train_instances, shuffle=True, num_epochs=1, cuda_device=device_num)
+        train_iter = biterator(sampled_train_instances, shuffle=True, num_epochs=1)
         for i, batch in tqdm(enumerate(train_iter)):
             model.train()
             out = model(batch)
@@ -1318,7 +1318,7 @@ def train_fever_v1_advsample_v2_shuffle_std_ema(resume_model=None):
             mod = 200
 
             if iteration % mod == 0:
-                eval_iter = biterator(dev_instances, shuffle=False, num_epochs=1, cuda_device=device_num)
+                eval_iter = biterator(dev_instances, shuffle=False, num_epochs=1)
                 complete_upstream_dev_data = hidden_eval(model, eval_iter, complete_upstream_dev_data)
 
                 eval_mode = {'check_sent_id_correct': True, 'standard': True}
@@ -1338,7 +1338,7 @@ def train_fever_v1_advsample_v2_shuffle_std_ema(resume_model=None):
                 torch.save(model.state_dict(), save_path)
 
                 # EMA saving
-                eval_iter = biterator(dev_instances, shuffle=False, num_epochs=1, cuda_device=device_num)
+                eval_iter = biterator(dev_instances, shuffle=False, num_epochs=1)
                 load_ema_to_model(cloned_empty_model, ema)
                 complete_upstream_dev_data = hidden_eval(cloned_empty_model, eval_iter, complete_upstream_dev_data)
 
@@ -1489,7 +1489,7 @@ def train_fever_v1_advsample_v2_shuffle_std_ema_on_dev(resume_model=None):
         print("Sample data length:", len(complete_upstream_train_data))
         sampled_train_instances = train_fever_data_reader.read(complete_upstream_train_data)
 
-        train_iter = biterator(sampled_train_instances, shuffle=True, num_epochs=1, cuda_device=device_num)
+        train_iter = biterator(sampled_train_instances, shuffle=True, num_epochs=1)
         for i, batch in tqdm(enumerate(train_iter)):
             model.train()
             out = model(batch)
@@ -1509,7 +1509,7 @@ def train_fever_v1_advsample_v2_shuffle_std_ema_on_dev(resume_model=None):
             mod = 5000
 
             if iteration % mod == 0:
-                eval_iter = biterator(dev_instances, shuffle=False, num_epochs=1, cuda_device=device_num)
+                eval_iter = biterator(dev_instances, shuffle=False, num_epochs=1)
                 complete_upstream_dev_data = hidden_eval(model, eval_iter, complete_upstream_dev_data)
 
                 eval_mode = {'check_sent_id_correct': True, 'standard': True}
@@ -1529,7 +1529,7 @@ def train_fever_v1_advsample_v2_shuffle_std_ema_on_dev(resume_model=None):
                 torch.save(model.state_dict(), save_path)
 
                 # EMA saving
-                eval_iter = biterator(dev_instances, shuffle=False, num_epochs=1, cuda_device=device_num)
+                eval_iter = biterator(dev_instances, shuffle=False, num_epochs=1)
                 load_ema_to_model(cloned_empty_model, ema)
                 complete_upstream_dev_data = hidden_eval(cloned_empty_model, eval_iter, complete_upstream_dev_data)
 
@@ -1672,7 +1672,7 @@ def train_fever_v1_advsample_v2_shuffle_bigger_train_on_dev():
         print("Sample data length:", len(complete_upstream_train_data))
         sampled_train_instances = train_fever_data_reader.read(complete_upstream_train_data)
 
-        train_iter = biterator(sampled_train_instances, shuffle=True, num_epochs=1, cuda_device=device_num)
+        train_iter = biterator(sampled_train_instances, shuffle=True, num_epochs=1)
         for i, batch in tqdm(enumerate(train_iter)):
             model.train()
             out = model(batch)
@@ -1693,7 +1693,7 @@ def train_fever_v1_advsample_v2_shuffle_bigger_train_on_dev():
                 mod = 1000
 
             if iteration % mod == 0:
-                eval_iter = biterator(dev_instances, shuffle=False, num_epochs=1, cuda_device=device_num)
+                eval_iter = biterator(dev_instances, shuffle=False, num_epochs=1)
                 dev_score, dev_loss = full_eval_model(model, eval_iter, criterion, complete_upstream_dev_data)
 
                 print(f"Dev:{dev_score}/{dev_loss}")
@@ -1828,7 +1828,7 @@ def train_fever_v1_advsample_shuffle_bigger():
         print("Sample data length:", len(complete_upstream_train_data))
         sampled_train_instances = train_fever_data_reader.read(complete_upstream_train_data)
 
-        train_iter = biterator(sampled_train_instances, shuffle=True, num_epochs=1, cuda_device=device_num)
+        train_iter = biterator(sampled_train_instances, shuffle=True, num_epochs=1)
         for i, batch in tqdm(enumerate(train_iter)):
             model.train()
             out = model(batch)
@@ -1849,7 +1849,7 @@ def train_fever_v1_advsample_shuffle_bigger():
                 mod = 500
 
             if iteration % mod == 0:
-                eval_iter = biterator(dev_instances, shuffle=False, num_epochs=1, cuda_device=device_num)
+                eval_iter = biterator(dev_instances, shuffle=False, num_epochs=1)
                 dev_score, dev_loss = full_eval_model(model, eval_iter, criterion, complete_upstream_dev_data)
 
                 print(f"Dev:{dev_score}/{dev_loss}")
@@ -1988,7 +1988,7 @@ def train_fever_v1_advsample_shuffle_stad():
         print("Sample data length:", len(complete_upstream_train_data))
         sampled_train_instances = train_fever_data_reader.read(complete_upstream_train_data)
 
-        train_iter = biterator(sampled_train_instances, shuffle=True, num_epochs=1, cuda_device=device_num)
+        train_iter = biterator(sampled_train_instances, shuffle=True, num_epochs=1)
         for i, batch in tqdm(enumerate(train_iter)):
             model.train()
             out = model(batch)
@@ -2009,7 +2009,7 @@ def train_fever_v1_advsample_shuffle_stad():
                 mod = 500
 
             if iteration % mod == 0:
-                eval_iter = biterator(dev_instances, shuffle=False, num_epochs=1, cuda_device=device_num)
+                eval_iter = biterator(dev_instances, shuffle=False, num_epochs=1)
                 dev_score, dev_loss = full_eval_model(model, eval_iter, criterion, complete_upstream_dev_data)
 
                 print(f"Dev:{dev_score}/{dev_loss}")
@@ -2070,7 +2070,7 @@ def utest_data_loader():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu", index=0)
     device_num = -1 if device.type == 'cpu' else 0
     sampled_train_instances = train_fever_data_reader.read(complete_upstream_train_data)
-    train_iter = biterator(sampled_train_instances, shuffle=True, num_epochs=1, cuda_device=device_num)
+    train_iter = biterator(sampled_train_instances, shuffle=True, num_epochs=1)
 
     for i, batch in tqdm(enumerate(train_iter)):
         pass
@@ -2135,7 +2135,7 @@ def spectrum_eval_manual_check():
         complete_upstream_dev_data = get_actual_data(config.T_FEVER_DEV_JSONL, upstream_dev_list)
         dev_instances = dev_fever_data_reader.read(complete_upstream_dev_data)
 
-        eval_iter = biterator(dev_instances, shuffle=False, num_epochs=1, cuda_device=device_num)
+        eval_iter = biterator(dev_instances, shuffle=False, num_epochs=1)
         builded_dev_data = hidden_eval(model, eval_iter, complete_upstream_dev_data)
 
         print("------------------------------------")
@@ -2215,7 +2215,7 @@ def pipeline_nli_run(t_org_file, upstream_dev_data_list, upstream_sent_file_list
     model.display()
     model.to(device)
 
-    eval_iter = biterator(dev_instances, shuffle=False, num_epochs=1, cuda_device=device_num)
+    eval_iter = biterator(dev_instances, shuffle=False, num_epochs=1)
     complete_upstream_dev_data = hidden_eval(model, eval_iter, complete_upstream_dev_data,
                                              with_logits=with_logits,
                                              with_probs=with_probs)
@@ -2286,7 +2286,7 @@ def pipeline_nli_run_list(t_org_file, upstream_dev_data_list, upstream_sent_file
     model.display()
     model.to(device)
 
-    eval_iter = biterator(dev_instances, shuffle=False, num_epochs=1, cuda_device=device_num)
+    eval_iter = biterator(dev_instances, shuffle=False, num_epochs=1)
     complete_upstream_dev_data = hidden_eval(model, eval_iter, complete_upstream_dev_data,
                                              with_logits=with_logits,
                                              with_probs=with_probs)
@@ -2361,7 +2361,7 @@ class ModelFORDemo:
 
         model = self.model
         print("Indexing")
-        eval_iter = self.biterator(dev_instances, shuffle=False, num_epochs=1, cuda_device=self.device_num)
+        eval_iter = self.biterator(dev_instances, shuffle=False, num_epochs=1)
         complete_upstream_dev_data = hidden_eval(model, eval_iter, complete_upstream_dev_data,
                                                  with_logits=with_logits,
                                                  with_probs=with_probs)
@@ -2425,7 +2425,7 @@ def pipeline_nli_run_bigger(t_org_file, upstream_dev_data_list, upstream_sent_fi
     model.display()
     model.to(device)
 
-    eval_iter = biterator(dev_instances, shuffle=False, num_epochs=1, cuda_device=device_num)
+    eval_iter = biterator(dev_instances, shuffle=False, num_epochs=1)
     complete_upstream_dev_data = hidden_eval(model, eval_iter, complete_upstream_dev_data,
                                              with_logits=with_logits,
                                              with_probs=with_probs)
