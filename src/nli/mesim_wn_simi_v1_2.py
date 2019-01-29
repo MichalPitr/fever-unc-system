@@ -395,7 +395,7 @@ def hidden_eval(model, data_iter, dev_data_list, cuda_device, with_logits=False,
 
         for batch_idx, batch in enumerate(tqdm(data_iter)):
             model_in = util.move_to_device(batch, cuda_device)
-            out = model.forward_on_instances(model_in)
+            out = model(model_in)
             y_id_list.extend(list(batch['pid']))
 
             # if append_text:
