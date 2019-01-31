@@ -190,7 +190,7 @@ def pipeline(in_file,
     sent_select_results_list_1 = simi_sampler.threshold_sampler_insure_unique(tokenized_file, sentences,
                                                                               sentence_retri_1_scale_prob, top_n=5)
 
-
+    print(sent_select_results_list_1[0])
     nli_results = nli.mesim_wn_simi_v1_2.pipeline_nli_run(tokenized_file,
                                                           sent_select_results_list_1,
                                                           [sentences],
