@@ -185,14 +185,9 @@ def pipeline(in_file,
 
     logs.info("Step 6. NLI")
     sentences = common.load_jsonl(in_file)
-    sentence_retri_1_scale_prob = 0.1
-    logs.info("Threshold: {0}".format( sentence_retri_1_scale_prob))
-    sent_select_results_list_1 = simi_sampler.threshold_sampler_insure_unique(tokenized_file, sentences,
-                                                                              sentence_retri_1_scale_prob, top_n=5)
 
-    print(sent_select_results_list_1[0])
     nli_results = nli.mesim_wn_simi_v1_2.pipeline_nli_run(tokenized_file,
-                                                          sent_select_results_list_1,
+                                                          sentences,
                                                           [sentences],
                                                           model_path_dict['no_doc_nli'],
                                                           with_logits=True,
@@ -200,7 +195,7 @@ def pipeline(in_file,
                                                           load_from_dict=False)
 
 
-    nli_results_file = working_dir / f"single_sent_nli_r_{in_file_stem}_with_doc_scale:{sentence_retri_1_scale_prob}_e0.jsonl"
+    nli_results_file = working_dir / f"single_sent_nli_r_{in_file_stem}_oracle_e0.jsonl"
     common.save_jsonl(nli_results, nli_results_file)
 
     for item in nli_results:
