@@ -1,0 +1,7 @@
+allennlp==0.7.1
+sqlitedict
+wget
+flashtext
+pexpect
+fire
+inflection
