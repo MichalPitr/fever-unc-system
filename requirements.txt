@@ -5,3 +5,4 @@ flashtext
 pexpect
 fire
 inflection
+fever-drqa
