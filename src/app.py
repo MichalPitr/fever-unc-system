@@ -24,7 +24,9 @@ from utils.fever_db import create_db, build_sentences_table, create_sent_db, sav
 from utils.wn_featurizer import wn_persistent_api
 
 
-def fever():
+
+def fever(*args):
+    print(args)
     print("Start building wiki document database. This might take a while.")
     create_db(str(config.FEVER_DB))
     save_wiki_pages(str(config.FEVER_DB))
