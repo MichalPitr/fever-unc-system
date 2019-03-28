@@ -6,3 +6,4 @@ pexpect
 fire
 inflection
 fever-drqa
+fever-api

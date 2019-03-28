@@ -1,8 +1,10 @@
+import copy
 import json
 
+import numpy
+import torch
+
 import config
-import drqa.tokenizers
-from drqa.tokenizers import CoreNLPTokenizer
 from utils import fever_db, text_clean
 from tqdm import tqdm
 
@@ -19,8 +21,6 @@ class DocIdDict(object):
         self.tokenized_doc_id_dict = None
 
 
-# global tokenized_doc_id_dict
-# tokenized_doc_id_dict = None
 global_doc_id_object = DocIdDict()
 
 
@@ -46,11 +46,19 @@ def load_jsonl(filename):
     return d_list
 
 
+def load_model(model, model_path, device):
+    if device.type == 'cpu':
+        model.load_state_dict(torch.load(model_path, map_location={'cuda:0': 'cpu'}))
+    else:
+        model.load_state_dict(torch.load(model_path))
+    model.to(device)
+
+
 def tokenize_doc_id(doc_id, tokenizer):
     # path_stanford_corenlp_full_2017_06_09 = str(config.PRO_ROOT / 'dep_packages/stanford-corenlp-full-2017-06-09/*')
     # print(path_stanford_corenlp_full_2017_06_09)
     #
-    # drqa.tokenizers.set_default('corenlp_classpath', path_stanford_corenlp_full_2017_06_09)
+    # drqa_yixin.tokenizers.set_default('corenlp_classpath', path_stanford_corenlp_full_2017_06_09)
     # tok = CoreNLPTokenizer(annotators=['pos', 'lemma', 'ner'])
 
     doc_id_natural_format = fever_db.convert_brc(doc_id).replace('_', ' ')
@@ -74,28 +82,27 @@ def doc_id_to_tokenized_text(doc_id, including_lemmas=False):
     return ' '.join(tokenized_doc_id_dict[doc_id]['words'])
 
 
-if __name__ == '__main__':
-    path_stanford_corenlp_full_2017_06_09 = str(config.PRO_ROOT / 'dep_packages/stanford-corenlp-full-2017-06-09/*')
-    print(path_stanford_corenlp_full_2017_06_09)
-    # #
-    drqa.tokenizers.set_default('corenlp_classpath', path_stanford_corenlp_full_2017_06_09)
-    tok = CoreNLPTokenizer(annotators=['pos', 'lemma'])
-    #
-    id_to_natural_id_dict = dict()
-    d_list = load_jsonl("/Users/Eason/RA/FunEver/data/id_dict.jsonl")
-    for item in tqdm(d_list):
-        doc_id = item['docid']
-        id_to_natural_id_dict[doc_id] = dict()
-        words, lemmas = tokenize_doc_id(doc_id, tok)
-        id_to_natural_id_dict[doc_id]['words'] = words
-        id_to_natural_id_dict[doc_id]['lemmas'] = lemmas
+def merge_sent_results(sent_r_list):
+    r_len = len(sent_r_list[0])
+    for sent_r in sent_r_list:
+        assert len(sent_r) == r_len
+
+    new_list = copy.deepcopy(sent_r_list[0])
+    for i in range(r_len):
+        prob_list = []
+        score_list = []
+        for sent_r in sent_r_list:
+            assert sent_r[i]['selection_id'] == new_list[i]['selection_id']
+            prob_list.append(sent_r[i]['prob'])
+            score_list.append(sent_r[i]['score'])
+        # assert len(prob_list) ==
+        new_list[i]['prob'] = float(numpy.mean(prob_list))
+        new_list[i]['score'] = float(numpy.mean(score_list))
+
+    return new_list
 
 
-    with open(config.DATA_ROOT / "tokenized_doc_id.json", encoding='utf-8', mode='w') as out_f:
-        json.dump(id_to_natural_id_dict, out_f)
-    # print("Yes")
-    # print(doc_id_to_tokenized_text('ABC'))
-    # print(doc_id_to_tokenized_text('ABC'))
-
-
-
+def delete_unused_evidence(d_list):
+    for item in d_list:
+        if item['predicted_label'] == 'NOT ENOUGH INFO':
+            item['predicted_evidence'] = []

@@ -1,6 +1,55 @@
-import unicodedata
+#!/usr/bin/env python3
+# Copyright 2017-present, Facebook, Inc.
+# All rights reserved.
+#
+# This source code is licensed under the license found in the
+# LICENSE file in the root directory of this source tree.
+"""Various retriever utilities."""
+
 import regex
-import re
+import unicodedata
+import numpy as np
+import scipy.sparse as sp
+from sklearn.utils import murmurhash3_32
+
+
+# ------------------------------------------------------------------------------
+# Sparse matrix saving/loading helpers.
+# ------------------------------------------------------------------------------
+
+
+def save_sparse_csr(filename, matrix, metadata=None):
+    data = {
+        'data': matrix.data,
+        'indices': matrix.indices,
+        'indptr': matrix.indptr,
+        'shape': matrix.shape,
+        'metadata': metadata,
+    }
+    np.savez(filename, **data)
+
+
+def load_sparse_csr(filename):
+    loader = np.load(filename)
+    matrix = sp.csr_matrix((loader['data'], loader['indices'],
+                            loader['indptr']), shape=loader['shape'])
+    return matrix, loader['metadata'].item(0) if 'metadata' in loader else None
+
+
+# ------------------------------------------------------------------------------
+# Token hashing.
+# ------------------------------------------------------------------------------
+
+
+def hash(token, num_buckets):
+    """Unsigned 32 bit murmurhash for feature hashing."""
+    return murmurhash3_32(token, positive=True) % num_buckets
+
+
+# ------------------------------------------------------------------------------
+# Text cleaning.
+# ------------------------------------------------------------------------------
+
 
 STOPWORDS = {
     'i', 'me', 'my', 'myself', 'we', 'our', 'ours', 'ourselves', 'you', 'your',
@@ -57,24 +106,3 @@ def filter_ngram(gram, mode='any'):
         return filtered[0] or filtered[-1]
     else:
         raise ValueError('Invalid mode: %s' % mode)
-
-
-def check_arabic(input_string):
-    res = re.findall(
-        r'[\U00010E60-\U00010E7F]|[\U0001EE00-\U0001EEFF]|[\u0750-\u077F]|[\u08A0-\u08FF]|[\uFB50-\uFDFF]|[\uFE70-\uFEFF]|[\u0600-\u06FF]', input_string)
-
-    if len(res) != 0:
-        return True
-    else:
-        return False
-
-
-def filter_document_id(input_string):
-    pid_words = input_string.strip().replace('_', ' ')
-    match = re.search('[a-zA-Z]', pid_words)
-    if match is None:
-        return True
-    elif check_arabic(pid_words):
-        return True
-    else:
-        return False
