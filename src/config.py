@@ -3,8 +3,8 @@ from pathlib import Path
 
 SRC_ROOT = Path(os.path.dirname(os.path.realpath(__file__)))
 
-SHARED_ROOT = Path("/local/fever-common/data")
-WIKI_PAGE_PATH= SHARED_ROOT / "wiki-pages"
+TMP_ROOT = Path("/tmp")
+WIKI_PAGE_PATH= TMP / "wiki-pages"
 
 PRO_ROOT = SRC_ROOT.parent
 

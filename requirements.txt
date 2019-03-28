@@ -7,4 +7,3 @@ fire
 inflection
 fever-drqa
 fever-api
-waitress
