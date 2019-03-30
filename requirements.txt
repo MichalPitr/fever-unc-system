@@ -1,4 +1,4 @@
-allennlp==0.7.1
+allennlp==0.7.0
 sqlitedict
 wget
 flashtext

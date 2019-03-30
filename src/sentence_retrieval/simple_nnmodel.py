@@ -241,7 +241,10 @@ def pipeline_first_sent_selection_list(org_t_file, upstream_in_file, model, voca
     vocab.get_index_to_token_vocabulary('selection_labels')
     dev_biterator.index_with(vocab)
 
-    eval_iter = dev_biterator(dev_instances, shuffle=False, num_epochs=1)
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu", index=0)
+    device_num = -1 if device.type == 'cpu' else 0
+
+    eval_iter = dev_biterator(dev_instances, shuffle=False, num_epochs=1, cuda_device=device_num)
     dev_sent_full_list = hidden_eval(model, eval_iter, complete_upstream_dev_data)
 
     return dev_sent_full_list

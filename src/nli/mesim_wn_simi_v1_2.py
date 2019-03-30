@@ -251,7 +251,7 @@ def pipeline_nli_run_list(t_org_file, upstream_dev_data_list, upstream_sent_file
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu", index=0)
     device_num = -1 if device.type == 'cpu' else 0
 
-    eval_iter = biterator(dev_instances, shuffle=False, num_epochs=1)
+    eval_iter = biterator(dev_instances, shuffle=False, num_epochs=1, cuda_device=device_num)
     complete_upstream_dev_data = hidden_eval(model, eval_iter, complete_upstream_dev_data)
 
     return complete_upstream_dev_data
