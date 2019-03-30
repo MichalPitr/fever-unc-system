@@ -1,5 +1,10 @@
 import datetime
+from argparse import ArgumentParser
+
 import torch
+from flask import json
+from tqdm import tqdm
+
 import config
 import logging
 
@@ -24,7 +29,7 @@ from utils.wn_featurizer import wn_persistent_api
 from logging.config import dictConfig
 
 
-def fever():
+def fever_app(caller):
     logger = logging.getLogger()
     dictConfig({
         'version': 1,
@@ -162,7 +167,7 @@ def fever():
 
     def batch_predict(instances):
         predictions = []
-        for instance in instances:
+        for instance in tqdm(instances,desc="Predicting"):
             prediction, sentences = predict_pipeline(instance['claim'])
             # [(page, lineId), ...]
             predictions.append({"predicted_label": prediction, "predicted_evidence": sentences})
@@ -224,4 +229,41 @@ def fever():
 
     logger.info('Finished loading models.')
 
-    return fever_web_api(batch_predict)
+
+    return caller(batch_predict)
+
+
+
+def web():
+    return fever_app(fever_web_api)
+
+
+if __name__ == "__main__":
+    call_method = None
+
+    def cli_method(predict_function):
+        global call_method
+        call_method = predict_function
+
+    def cli():
+        return fever_app(cli_method)
+
+    cli()
+
+    parser = ArgumentParser()
+    parser.add_argument("--in-file")
+    parser.add_argument("--out-file")
+    args = parser.parse_args()
+
+    claims = []
+
+    with open(args.in_file,"r") as in_file:
+        for text_line in in_file:
+            line = json.loads(text_line)
+            claims.append(line)
+
+    predictions = call_method(claims)
+
+    with open(args.out_file,"w+") as out_file:
+        for prediction in predictions:
+            out_file.write(json.dumps(prediction)+"\n")
