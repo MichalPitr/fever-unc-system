@@ -4,7 +4,7 @@ from pathlib import Path
 SRC_ROOT = Path(os.path.dirname(os.path.realpath(__file__)))
 
 TMP_ROOT = Path("/tmp")
-WIKI_PAGE_PATH= TMP / "wiki-pages"
+WIKI_PAGE_PATH= TMP_ROOT / "wiki-pages"
 
 PRO_ROOT = SRC_ROOT.parent
 

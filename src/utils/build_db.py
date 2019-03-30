@@ -1,3 +1,6 @@
+import config
+from utils.fever_db import create_db, save_wiki_pages, create_sent_db, build_sentences_table, check_document_id
+
 print("Start building wiki document database. This might take a while.")
 
 print(str(config.FEVER_DB))

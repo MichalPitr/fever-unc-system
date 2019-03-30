@@ -1,11 +1,10 @@
 import datetime
 import torch
-from allennlp.data.token_indexers import SingleIdTokenIndexer, ELMoTokenCharactersIndexer
-from flask import Flask, request, jsonify
-
-from fever.api.web_server import fever_web_api
-
 import config
+import logging
+
+from allennlp.data.token_indexers import SingleIdTokenIndexer, ELMoTokenCharactersIndexer
+from fever.api.web_server import fever_web_api
 from doc_retrieval.item_rules_spiral import ItemRuleBuilderSpiral
 from nli import mesim_wn_simi_v1_2
 from nli import simi_sampler
@@ -20,13 +19,34 @@ from utils.data_utils.exvocab import load_vocab_embeddings
 from utils.data_utils.fever_reader_with_wn_simi import WNSIMIReader
 from utils.drqa.tokenizers import set_default
 from utils.drqa.tokenizers.corenlp_tokenizer import CoreNLPTokenizer
-from utils.fever_db import create_db, build_sentences_table, create_sent_db, save_wiki_pages, check_document_id
 from utils.wn_featurizer import wn_persistent_api
 
+from logging.config import dictConfig
 
 
-def create_app(*args):
-    print(args)
+def fever():
+    logger = logging.getLogger()
+    dictConfig({
+        'version': 1,
+        'formatters': {'default': {
+            'format': '[%(asctime)s] %(levelname)s in %(module)s: %(message)s',
+        }},
+        'handlers': {'wsgi': {
+            'class': 'logging.StreamHandler',
+            'stream': 'ext://sys.stderr',
+            'formatter': 'default'
+        }},
+        'root': {
+            'level': 'INFO',
+            'handlers': ['wsgi']
+        },
+        'allennlp': {
+            'level': 'INFO',
+            'handlers': ['wsgi']
+        },
+    })
+
+    logger.info("Set up flask app")
 
     nn_doc_retri_threshold = 0.00001
     top_k = 100
@@ -40,16 +60,16 @@ def create_app(*args):
 
     def predict_pipeline(claim):
         # Step 1: Tokenization
-        print('Step 1')
-        print('Start: ' + str(datetime.datetime.now().time()))
+        logger.info('Step 1')
+        logger.info('Start: ' + str(datetime.datetime.now().time()))
         claim_tok = ' '.join(tok.tokenize(text_clean.normalize(claim)).words())
         item_tokenized = {'id': 0, 'claim': claim_tok}
         tokenized_list = [item_tokenized]
-        print('End: ' + str(datetime.datetime.now().time()))
+        logger.info('End: ' + str(datetime.datetime.now().time()))
 
         # Step 2: 1st Doc retrieval
-        print('Step 2')
-        print('Start: ' + str(datetime.datetime.now().time()))
+        logger.info('Step 2')
+        logger.info('Start: ' + str(datetime.datetime.now().time()))
         item_doc_retrieval = {'id': 0, 'claim': claim_tok}
         item_rb.first_only_rules(item_doc_retrieval)
         item_doc_retrieval['predicted_docids'] = list(
@@ -61,11 +81,11 @@ def create_app(*args):
 
         nn_doc_list = nn_doc_model.pipeline_function_list(doc_retrieval_list, doc_retrieval_model, vocab, cursor)
         enforce_disabuigation_into_retrieval_result_v2(nn_doc_list, doc_retrieval_list, prob_sh=nn_doc_retri_threshold)
-        print('End: ' + str(datetime.datetime.now().time()))
+        logger.info('End: ' + str(datetime.datetime.now().time()))
 
         # Step 3: 1st Sentence selection
-        print('Step 3')
-        print('Start: ' + str(datetime.datetime.now().time()))
+        logger.info('Step 3')
+        logger.info('Start: ' + str(datetime.datetime.now().time()))
         dev_sent_list_1_e0 = simple_nnmodel.pipeline_first_sent_selection_list(tokenized_list, doc_retrieval_list,
                                                                                sent_selector_model, vocab,
                                                                                top_k=nn_doc_top_k, cursor=cursor)
@@ -83,11 +103,11 @@ def create_app(*args):
         dev_sent_1_list = simi_sampler.threshold_sampler_insure_unique_list(doc_retrieval_list, dev_sent_list_1,
                                                                             sentence_retri_1_scale_prob,
                                                                             top_n=sent_topk_for_2doc)
-        print('End: ' + str(datetime.datetime.now().time()))
+        logger.info('End: ' + str(datetime.datetime.now().time()))
 
         # Step 4: 2nd Doc retrieval
-        print('Step 4')
-        print('Start: ' + str(datetime.datetime.now().time()))
+        logger.info('Step 4')
+        logger.info('Start: ' + str(datetime.datetime.now().time()))
         item_rb.preext_sent_dict = {item['id']: item for item in filtered_dev_instance_1_for_doc2}
         item = dev_sent_1_list[0]
         item_rb.second_only_rules(item)
@@ -99,17 +119,17 @@ def create_app(*args):
         item['predicted_docids_origin'] = list(porg)
         item['predicted_docids_aside'] = list(paside)
         dev_doc_2_list = [item]
-        print('End: ' + str(datetime.datetime.now().time()))
+        logger.info('End: ' + str(datetime.datetime.now().time()))
 
         # Step 5: 2nd Sentence selection
-        print('Step 5')
-        print('Start: ' + str(datetime.datetime.now().time()))
+        logger.info('Step 5')
+        logger.info('Start: ' + str(datetime.datetime.now().time()))
         dev_sent_list_2 = get_score_multihop_list(tokenized_list, dev_doc_2_list, sent_selector_2_model, vocab, cursor)
-        print('End: ' + str(datetime.datetime.now().time()))
+        logger.info('End: ' + str(datetime.datetime.now().time()))
 
         # Step 6: NLI
-        print('Step 6')
-        print('Start: ' + str(datetime.datetime.now().time()))
+        logger.info('Step 6')
+        logger.info('Start: ' + str(datetime.datetime.now().time()))
         sentence_retri_nli_scale_prob = 0.1
         sent_select_results_list_1 = simi_sampler.threshold_sampler_insure_unique_list(tokenized_list, dev_sent_list_1,
                                                                                        sentence_retri_nli_scale_prob,
@@ -137,7 +157,7 @@ def create_app(*args):
             sentences.append((evidence, e_text))
         prediction = final_item['predicted_label'].upper()
 
-        print('End: ' + str(datetime.datetime.now().time()))
+        logger.info('End: ' + str(datetime.datetime.now().time()))
         return prediction, sentences
 
     def batch_predict(instances):
@@ -150,8 +170,7 @@ def create_app(*args):
 
     cursor = fever_db.get_cursor()
 
-    path_stanford_corenlp_full_2017_06_09 = str(config.DATA_ROOT / 'stanford-corenlp/*')
-    set_default('corenlp_classpath', path_stanford_corenlp_full_2017_06_09)
+
     tok = CoreNLPTokenizer(annotators=['pos', 'lemma'])
     item_rb = ItemRuleBuilderSpiral(tokenizer=tok, cursor=cursor)
     p_dict = wn_persistent_api.persistence_load()
@@ -189,7 +208,6 @@ def create_app(*args):
                                                  embedding_dim=300, max_l=300, num_of_class=2)
     load_model(sent_selector_2_model, model_path_dict['sselector'], device)
 
-
     # Prepare Data
     token_indexers = {
         'tokens': SingleIdTokenIndexer(namespace='tokens'),  # This is the raw tokens
@@ -204,8 +222,6 @@ def create_app(*args):
                                          mlp_d=900, embedding_dim=300, max_l=400)
     load_model(nli_model, model_path_dict['no_doc_nli'], device)
 
-    print('Finished loading models.')
+    logger.info('Finished loading models.')
 
     return fever_web_api(batch_predict)
-
-
