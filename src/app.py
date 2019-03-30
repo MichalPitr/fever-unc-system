@@ -165,7 +165,7 @@ def fever():
         for instance in instances:
             prediction, sentences = predict_pipeline(instance['claim'])
             # [(page, lineId), ...]
-            prediction.append({"predicted_label": prediction, "predicted_evidence": sentences})
+            predictions.append({"predicted_label": prediction, "predicted_evidence": sentences})
         return predictions
 
     cursor = fever_db.get_cursor()
