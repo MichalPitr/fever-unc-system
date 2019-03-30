@@ -63,24 +63,30 @@ def fever_app(caller):
     sent_retri_2_top_k = 1
     enhance_retri_1_scale_prob = -1
 
-    def predict_pipeline(claim):
+    def predict_pipeline(claims):
         # Step 1: Tokenization
         logger.info('Step 1')
         logger.info('Start: ' + str(datetime.datetime.now().time()))
-        claim_tok = ' '.join(tok.tokenize(text_clean.normalize(claim)).words())
-        item_tokenized = {'id': 0, 'claim': claim_tok}
-        tokenized_list = [item_tokenized]
+
+        tokenized_list = []
+        for idx, claim in enumerate(claims):
+            claim_tok = ' '.join(tok.tokenize(text_clean.normalize(claim["claim"])).words())
+            item_tokenized = {'id': idx, 'claim': claim_tok}
+            tokenized_list.append(item_tokenized)
         logger.info('End: ' + str(datetime.datetime.now().time()))
 
         # Step 2: 1st Doc retrieval
         logger.info('Step 2')
         logger.info('Start: ' + str(datetime.datetime.now().time()))
-        item_doc_retrieval = {'id': 0, 'claim': claim_tok}
-        item_rb.first_only_rules(item_doc_retrieval)
-        item_doc_retrieval['predicted_docids'] = list(
-            set([k for k, v in sorted(item_doc_retrieval['prioritized_docids'],
-                                      key=lambda x: (-x[1], x[0]))][:top_k]))
-        doc_retrieval_list = [item_doc_retrieval]
+
+        for item in tokenized_list:
+            item_doc_retrieval = item
+            item_rb.first_only_rules(item_doc_retrieval)
+            item_doc_retrieval['predicted_docids'] = list(
+                set([k for k, v in sorted(item_doc_retrieval['prioritized_docids'],
+                                          key=lambda x: (-x[1], x[0]))][:top_k]))
+
+        doc_retrieval_list = tokenized_list
         item_remove_old_rule(doc_retrieval_list)
         item_resorting(doc_retrieval_list)
 
@@ -114,22 +120,23 @@ def fever_app(caller):
         logger.info('Step 4')
         logger.info('Start: ' + str(datetime.datetime.now().time()))
         item_rb.preext_sent_dict = {item['id']: item for item in filtered_dev_instance_1_for_doc2}
-        item = dev_sent_1_list[0]
-        item_rb.second_only_rules(item)
-        pids = [it[0] for it in item['prioritized_docids']]
-        item['prioritized_docids_aside'] = [it for it in item['prioritized_docids_aside'] if it[0] not in pids]
-        porg = set([k for k, v in sorted(item['prioritized_docids'], key=lambda x: (-x[1], x[0]))][:top_k])
-        paside = set([k for k, v in sorted(item['prioritized_docids_aside'], key=lambda x: (-x[1], x[0]))][:top_k])
-        item['predicted_docids'] = list(porg | paside)
-        item['predicted_docids_origin'] = list(porg)
-        item['predicted_docids_aside'] = list(paside)
-        dev_doc_2_list = [item]
+
+        for item in dev_sent_1_list:
+            item_rb.second_only_rules(item)
+            pids = [it[0] for it in item['prioritized_docids']]
+            item['prioritized_docids_aside'] = [it for it in item['prioritized_docids_aside'] if it[0] not in pids]
+            porg = set([k for k, v in sorted(item['prioritized_docids'], key=lambda x: (-x[1], x[0]))][:top_k])
+            paside = set([k for k, v in sorted(item['prioritized_docids_aside'], key=lambda x: (-x[1], x[0]))][:top_k])
+            item['predicted_docids'] = list(porg | paside)
+            item['predicted_docids_origin'] = list(porg)
+            item['predicted_docids_aside'] = list(paside)
+
         logger.info('End: ' + str(datetime.datetime.now().time()))
 
         # Step 5: 2nd Sentence selection
         logger.info('Step 5')
         logger.info('Start: ' + str(datetime.datetime.now().time()))
-        dev_sent_list_2 = get_score_multihop_list(tokenized_list, dev_doc_2_list, sent_selector_2_model, vocab, cursor)
+        dev_sent_list_2 = get_score_multihop_list(tokenized_list, dev_sent_1_list, sent_selector_2_model, vocab, cursor)
         logger.info('End: ' + str(datetime.datetime.now().time()))
 
         # Step 6: NLI
@@ -155,22 +162,15 @@ def fever_app(caller):
                                                                          top_n=100, add_n=100)
         delete_unused_evidence(nli_results)
 
-        final_item = nli_results[0]
-        sentences = []
-        for evidence in final_item['predicted_evidence']:
-            _, e_text, _ = fever_db.get_evidence(cursor, evidence[0], evidence[1])
-            sentences.append((evidence, e_text))
-        prediction = final_item['predicted_label'].upper()
-
+        preditions = []
+        for final_item in nli_results:
+            sentences = []
+            for evidence in final_item['predicted_evidence']:
+                _, e_text, _ = fever_db.get_evidence(cursor, evidence[0], evidence[1])
+                sentences.append((evidence, e_text))
+            prediction = final_item['predicted_label'].upper()
+            predictions.append({"predicted_label":prediction,"predicted_evidence":sentences})
         logger.info('End: ' + str(datetime.datetime.now().time()))
-        return prediction, sentences
-
-    def batch_predict(instances):
-        predictions = []
-        for instance in tqdm(instances,desc="Predicting"):
-            prediction, sentences = predict_pipeline(instance['claim'])
-            # [(page, lineId), ...]
-            predictions.append({"predicted_label": prediction, "predicted_evidence": sentences})
         return predictions
 
     cursor = fever_db.get_cursor()
@@ -225,12 +225,10 @@ def fever_app(caller):
                                          weight=weight_dict['glove.840B.300d'],
                                          vocab_size=vocab.get_vocab_size('tokens'),
                                          mlp_d=900, embedding_dim=300, max_l=400)
+
     load_model(nli_model, model_path_dict['no_doc_nli'], device)
-
     logger.info('Finished loading models.')
-
-
-    return caller(batch_predict)
+    return caller(predict_pipeline)
 
 
 

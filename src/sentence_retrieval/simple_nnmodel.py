@@ -187,6 +187,7 @@ def hidden_eval(model, data_iter, dev_data_list):
         y_id_list = []
 
         for batch_idx, batch in enumerate(data_iter):
+
             out = model(batch)
             prob = F.softmax(out, dim=1)
 
