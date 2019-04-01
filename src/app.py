@@ -162,7 +162,7 @@ def fever_app(caller):
                                                                          top_n=100, add_n=100)
         delete_unused_evidence(nli_results)
 
-        preditions = []
+        predictions = []
         for final_item in nli_results:
             sentences = []
             for evidence in final_item['predicted_evidence']:
@@ -260,8 +260,8 @@ if __name__ == "__main__":
             line = json.loads(text_line)
             claims.append(line)
 
-    predictions = call_method(claims)
+    ret = call_method(claims)
 
     with open(args.out_file,"w+") as out_file:
-        for prediction in predictions:
+        for prediction in ret:
             out_file.write(json.dumps(prediction)+"\n")
