@@ -166,7 +166,7 @@ def fever_app(caller):
         for final_item in nli_results:
             sentences = []
             for evidence in final_item['predicted_evidence']:
-                sentences.extend((evidence[0], evidence[1]))
+                sentences.append([evidence[0], evidence[1]])
             prediction = final_item['predicted_label'].upper()
             predictions.append({"predicted_label":prediction,"predicted_evidence":sentences})
         logger.info('End: ' + str(datetime.datetime.now().time()))
