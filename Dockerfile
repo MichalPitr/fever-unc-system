@@ -1,6 +1,6 @@
+
 FROM continuumio/miniconda3
 
-ENTRYPOINT ["/bin/bash"]
 
 ENV NVIDIA_VISIBLE_DEVICES all
 ENV NVIDIA_DRIVER_CAPABILITIES compute,utility
@@ -19,7 +19,7 @@ RUN apt-get install -y --no-install-recommends --allow-unauthenticated \
     man-db \
     autoconf \
     pkg-config \
-    unzip \
+    unzip \ 
     libffi-dev \
     software-properties-common \
     openjdk-8-jre-headless
@@ -33,27 +33,11 @@ RUN mkdir /fever/
 RUN mkdir /work
 
 VOLUME /work
-
-
 WORKDIR /fever
 
 RUN conda install -c pytorch pytorch=0.4.1 -y
-ADD requirements.txt /fever/
-RUN pip install -r requirements.txt
-ADD src /fever/src/
-ADD scripts /fever/scripts/
 
 RUN mkdir /fever/data
-
-RUN mkdir /fever/data/fever
-WORKDIR /fever/data/fever
-RUN wget https://s3-eu-west-1.amazonaws.com/fever.public/shared_task_dev.jsonl
-RUN wget https://s3-eu-west-1.amazonaws.com/fever.public/train.jsonl
-RUN wget https://s3-eu-west-1.amazonaws.com/fever.public/shared_task_test.jsonl
-
-WORKDIR /fever/data
-RUN wget https://s3-eu-west-1.amazonaws.com/fever.public/wiki-pages.zip
-RUN unzip "wiki-pages.zip" && rm "wiki-pages.zip"
 
 WORKDIR /fever/data
 RUN wget -O "aux_file.zip" "https://www.dropbox.com/s/yrecf582rqtgke0/aux_file.zip?dl=0"
@@ -64,8 +48,8 @@ WORKDIR /fever/dep_packages
 RUN wget -O "dep_packages.zip" "https://www.dropbox.com/s/74uc24un1eoqwch/dep_packages.zip?dl=0"
 RUN unzip "dep_packages.zip" && rm "dep_packages.zip"
 
-RUN mkdir /fever/saved_models
-WORKDIR /fever/saved_models
+RUN mkdir /fever/data/models
+WORKDIR /fever/data/models
 RUN wget -O "saved_nli_m.zip" "https://www.dropbox.com/s/rc3zbq8cefhcckg/saved_nli_m.zip?dl=0"
 RUN unzip "saved_nli_m.zip" && rm "saved_nli_m.zip"
 RUN  wget -O "nn_doc_selector.zip" "https://www.dropbox.com/s/hj4zv3k5lzek9yr/nn_doc_selector.zip?dl=0"
@@ -74,18 +58,35 @@ RUN unzip "nn_doc_selector.zip" && rm "nn_doc_selector.zip"
 RUN wget -O "saved_sselector.zip" "https://www.dropbox.com/s/56tadhfti1zolnz/saved_sselector.zip?dl=0"
 RUN unzip "saved_sselector.zip" && rm "saved_sselector.zip"
 
-WORKDIR /fever/
-
-RUN mkdir /fever/results
-WORKDIR /fever/results
-
+WORKDIR /fever/data
 RUN wget -O "chaonan99.zip" "https://www.dropbox.com/s/pu3h5xc2kpws0n2/chaonan99.zip?dl=0"
 RUN unzip "chaonan99.zip" && rm "chaonan99.zip"
 
-ENV PYTHONPATH src
 WORKDIR /fever
+RUN mv data/chaonan99/* data/
+RUN mv "data/models/saved_sselector/i(57167)_epoch(6)_(tra_score:0.8850885088508851|raw_acc:1.0|pr:0.3834395939593578|rec:0.8276327632763276|f1:0.5240763176570098)_epoch" data/models/sent_selector
+RUN mv "data/models/saved_sselector/i(58915)_epoch(7)_(tra_score:0.8838383838383839|raw_acc:1.0|pr:0.39771352135209675|rec:0.8257575757575758|f1:0.5368577222846761)_epoch" data/models/sent_selector_1
+RUN mv "data/models/saved_sselector/i(77083)_epoch(7)_(tra_score:0.8841384138413841|raw_acc:1.0|pr:0.3964771477147341|rec:0.8262076207620762|f1:0.5358248492912955)_epoch" data/models/sent_selector_2
+RUN mv data/models/nn_doc_selector data/models/nnds
+RUN mv "data/models/nnds/i(9000)_epoch(1)_(tra_score:0.9212421242124212|pr:0.4299679967996279|rec:0.8818631863186318|f1:0.5780819247968391)" data/models/nn_doc_selector
+RUN mv "data/models/saved_nli_m/i(77000)_epoch(11)_dev(0.6601160116011601)_loss(1.1138329989302813)_seed(12)" data/models/nli
+RUN rm -rf data/models/saved_sselector
+RUN rm -rf data/models/nnds
+RUN rm -rf data/models/saved_nli_m
 
-RUN python src/pipeline/prepare_data.py build_database
+
+WORKDIR /fever/
+COPY --from=feverai/common /local/fever-common/data/wiki-pages /tmp/wiki-pages
+ADD requirements.txt /fever/
+RUN pip install -r requirements.txt
+
+ADD src /fever/src/
+ADD scripts /fever/scripts/
+
+ENV PYTHONPATH src
+ENV CLASSPATH=/fever/dep_packages/stanford-corenlp-full-2017-06-09/*
+
 RUN python -c 'import nltk; nltk.download("wordnet_ic"); nltk.download("averaged_perceptron_tagger"); nltk.download("wordnet")'
+RUN python src/utils/build_db.py
 
-ADD run.sh /fever/
+CMD ["waitress-serve", "--host=0.0.0.0","--port=5000", "--call", "app:fever"]
