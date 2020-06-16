@@ -6,6 +6,7 @@ ENV NVIDIA_VISIBLE_DEVICES all
 ENV NVIDIA_DRIVER_CAPABILITIES compute,utility
 
 RUN apt-get update
+RUN mkdir -p /usr/share/man/man1mkdir -p /usr/share/man/man1
 RUN apt-get install -y --no-install-recommends --allow-unauthenticated \
     zip \
     gzip \
@@ -22,7 +23,7 @@ RUN apt-get install -y --no-install-recommends --allow-unauthenticated \
     unzip \ 
     libffi-dev \
     software-properties-common \
-    openjdk-8-jre-headless
+    openjdk-11-jre-headless
 
 RUN conda update -q conda
 RUN conda info -a
