@@ -232,6 +232,7 @@ def fever_app(caller):
 
 
 def web():
+    print("Running the web version")
     return fever_app(fever_web_api)
 
 
@@ -243,6 +244,7 @@ if __name__ == "__main__":
         call_method = predict_function
 
     def cli():
+        print("Running the CLI version")
         return fever_app(cli_method)
 
     cli()
