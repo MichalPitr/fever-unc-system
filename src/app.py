@@ -171,7 +171,8 @@ def fever_app(caller):
             predictions.append({"predicted_label":prediction,"predicted_evidence":sentences})
         logger.info('End: ' + str(datetime.datetime.now().time()))
         return predictions
-
+    
+    logger.info('Starting fever_db.get_cursor()', str(datetime.datetime.now().time()))
     cursor = fever_db.get_cursor()
 
     logger.info('Starting CoreNLPTokenizer', str(datetime.datetime.now().time()))
