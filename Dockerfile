@@ -86,6 +86,7 @@ ADD scripts /fever/scripts/
 
 ENV PYTHONPATH src
 ENV CLASSPATH=/fever/dep_packages/stanford-corenlp-full-2017-06-09/*
+ENV FLASK_APP app:web
 
 RUN python -c 'import nltk; nltk.download("wordnet_ic"); nltk.download("averaged_perceptron_tagger"); nltk.download("wordnet")'
 RUN python src/utils/build_db.py
