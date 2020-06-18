@@ -4,15 +4,17 @@ This repository provides an implementation for the paper [Combining Fact Extract
 # Installation
 To build a Docker image of this repository you'll need to have Docker installed. You may need root priviliges. Building the repository may take a while and requires around 50 GB of disk space. Here's more info about docker build command https://docs.docker.com/engine/reference/commandline/run/.
 ```
-docker build --tag NAME https://github.com/MichalPitr/fever-unc-system.git
+docker build --tag <NAME> https://github.com/MichalPitr/fever-unc-system.git
 ```
 --tag gives image a name.
 # Running it
-There's multiple ways to run a docker image, but here's the most basic one. To learn more about Docker's CLI visit https://docs.docker.com/engine/reference/commandline/run/.
+There's multiple ways to run a docker image, but here's the recommended one. To learn more about Docker's CLI visit https://docs.docker.com/engine/reference/commandline/run/. This starts a flask server for interactive query, I recommend using Postman for that. 
 ```
-docker run NAME
+docker run --rm -it -e CUDA_DEVICE=-1 -p 5000:5000 <NAME>
 ```
-
+--rm removes the container once it exits
+-it runs the container in interactive mode
+-p defines which ports to expose, necessary for flask server to be accessible by the host machine
 
 ## Citation
 If you find this implementation helpful, please consider citing:
