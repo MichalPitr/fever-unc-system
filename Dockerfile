@@ -89,6 +89,7 @@ ENV CLASSPATH=/fever/dep_packages/stanford-corenlp-full-2017-06-09/*
 ENV FLASK_APP app:web
 
 RUN python -c 'import nltk; nltk.download("wordnet_ic"); nltk.download("averaged_perceptron_tagger"); nltk.download("wordnet")'
-RUN python src/utils/build_db.py
+#RUN python src/utils/build_db.py
 
-CMD ["waitress-serve", "--host=0.0.0.0","--port=5000", "--call", "app:web"]
+CMD ["/bin/bash"]
+#CMD ["waitress-serve", "--host=0.0.0.0","--port=5000", "--call", "app:web"]
