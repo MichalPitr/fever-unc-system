@@ -8,13 +8,15 @@ docker build --tag <NAME> https://github.com/MichalPitr/fever-unc-system.git
 ```
 --tag gives image a name.
 # Running it
-There's multiple ways to run a docker image, but here's the recommended one. To learn more about Docker's CLI visit https://docs.docker.com/engine/reference/commandline/run/. This starts a flask server for interactive query, I recommend using Postman for that. 
+There's multiple ways to run a docker image, but here's the recommended one. To learn more about Docker's CLI visit https://docs.docker.com/engine/reference/commandline/run/. This starts a flask server for interactive query, I recommend using Postman for that.
 ```
 docker run --rm -it -e CUDA_DEVICE=-1 -p 5000:5000 <NAME>
 ```
 --rm removes the container once it exits
 -it runs the container in interactive mode
 -p defines which ports to expose, necessary for flask server to be accessible by the host machine
+
+Currently, it is necessary to run `python src/utils/build_db.py` once terminal opens before running app.py. This was done to make the docker image smaller.
 
 ## Citation
 If you find this implementation helpful, please consider citing:
