@@ -172,14 +172,14 @@ def fever_app(caller):
         logger.info('End: ' + str(datetime.datetime.now().time()))
         return predictions
     
-    logger.info('Starting fever_db.get_cursor()', str(datetime.datetime.now().time()))
+    logger.info('Starting fever_db.get_cursor()' + str(datetime.datetime.now().time()))
     cursor = fever_db.get_cursor()
 
-    logger.info('Starting CoreNLPTokenizer', str(datetime.datetime.now().time()))
+    logger.info('Starting CoreNLPTokenizer' + str(datetime.datetime.now().time()))
     tok = CoreNLPTokenizer(annotators=['pos', 'lemma'])
-    logger.info('Running ItemRuleBuilderSpiral', str(datetime.datetime.now().time()))
+    logger.info('Running ItemRuleBuilderSpiral' + str(datetime.datetime.now().time()))
     item_rb = ItemRuleBuilderSpiral(tokenizer=tok, cursor=cursor)
-    logger.info('Running WN_persistent_api', str(datetime.datetime.now().time()))
+    logger.info('Running WN_persistent_api' + str(datetime.datetime.now().time()))
     p_dict = wn_persistent_api.persistence_load()
     model_path_dict = {
         'sselector': config.DATA_ROOT / 'models/sent_selector',
@@ -189,7 +189,7 @@ def fever_app(caller):
         'no_doc_nli': config.DATA_ROOT / 'models/nli',
     }
     # Preload the NN models
-    logger.info('preloading NN models', str(datetime.datetime.now().time()))
+    logger.info('preloading NN models' + str(datetime.datetime.now().time()))
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu", index=0)
     vocab, weight_dict = load_vocab_embeddings(config.DATA_ROOT / "vocab_cache" / "nli_basic")
 
@@ -217,24 +217,24 @@ def fever_app(caller):
     load_model(sent_selector_2_model, model_path_dict['sselector'], device)
 
     # Prepare Data
-    logger.info('Prepare data', str(datetime.datetime.now().time()))
+    logger.info('Prepare data' + str(datetime.datetime.now().time()))
     token_indexers = {
         'tokens': SingleIdTokenIndexer(namespace='tokens'),  # This is the raw tokens
         'elmo_chars': ELMoTokenCharactersIndexer(namespace='elmo_characters')  # This is the elmo_characters
     }
-    logger.info('Run WNSIMIReader', str(datetime.datetime.now().time()))
+    logger.info('Run WNSIMIReader' + str(datetime.datetime.now().time()))
     dev_fever_data_reader = WNSIMIReader(token_indexers=token_indexers, lazy=True, wn_p_dict=p_dict, max_l=420)
-    logger.info('Make NLI model', str(datetime.datetime.now().time()))
+    logger.info('Make NLI model' + str(datetime.datetime.now().time()))
     nli_model = mesim_wn_simi_v1_2.Model(rnn_size_in=(1024 + 300 + dev_fever_data_reader.wn_feature_size,
                                                       1024 + 450 + dev_fever_data_reader.wn_feature_size),
                                          rnn_size_out=(450, 450),
                                          weight=weight_dict['glove.840B.300d'],
                                          vocab_size=vocab.get_vocab_size('tokens'),
                                          mlp_d=900, embedding_dim=300, max_l=400)
-    logger.info('load nli model', str(datetime.datetime.now().time()))
+    logger.info('load nli model' + str(datetime.datetime.now().time()))
     load_model(nli_model, model_path_dict['no_doc_nli'], device)
-    logger.info('Finished loading model', str(datetime.datetime.now().time()))
-    logger.info('run caller(predict_pipeline)', str(datetime.datetime.now().time()))
+    logger.info('Finished loading model' + str(datetime.datetime.now().time()))
+    logger.info('run caller(predict_pipeline)' + str(datetime.datetime.now().time()))
     return caller(predict_pipeline)
 
 
