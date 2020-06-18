@@ -6,5 +6,5 @@ pexpect
 fire
 inflection
 fever-drqa
-Werkzeug=0.16.1
+Werkzeug==0.16.1
 fever-api
