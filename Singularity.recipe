@@ -1,0 +1,91 @@
+Bootstrap: docker
+From: continuumio/miniconda3:4.8.2
+
+%labels
+	CREATOR michalpitr
+
+%environment
+	NVIDIA_VISIBLE_DEVICES=all
+	NVIDIA_DRIVER_CAPABILITIES compute,utility	
+	PYTHONPATH=src
+	CLASSPATH=/fever/dep_packages/stanford-corenlp-full-2017-06-09/*
+	FLASK_APP=app:web
+
+
+%post
+	apt-get update
+	mkdir -p /usr/share/man/man1mkdir -p /usr/share/man/man1
+	apt-get install -y --no-install-recommends --allow-unauthenticated zip gzip make automake gcc \
+build-essential g++ cpp libc6-dev man-db autoconf pkg-config unzip libffi-dev software-properties-common openjdk-11-jre-headless
+	
+	conda update -q conda
+	conda info -a
+	conda create -q -n fever python=3.6
+	
+	conda install -c pytorch pytorch=0.4.1 -y
+
+	git clone https://github.com/MichalPitr/fever-unc-system.git
+	cd fever-unc-system
+	
+	mkdir /fever/
+	cd /fever
+	
+	mkdir /fever/data
+	cd /fever/data
+	wget -O "aux_file.zip" "https://www.dropbox.com/s/yrecf582rqtgke0/aux_file.zip?dl=0"
+	unzip "aux_file.zip" && rm "aux_file.zip"
+
+	mkdir /fever/dep_packages
+	cd /fever/dep_packages
+	wget -O "dep_packages.zip" "https://www.dropbox.com/s/74uc24un1eoqwch/dep_packages.zip?dl=0"
+	unzip "dep_packages.zip" && rm "dep_packages.zip"
+	
+	mkdir /fever/data/models
+	cd /fever/data/models
+	wget -O "saved_nli_m.zip" "https://www.dropbox.com/s/rc3zbq8cefhcckg/saved_nli_m.zip?dl=0"
+	unzip "saved_nli_m.zip" && rm "saved_nli_m.zip"
+	wget -O "nn_doc_selector.zip" "https://www.dropbox.com/s/hj4zv3k5lzek9yr/nn_doc_selector.zip?dl=0"
+	unzip "nn_doc_selector.zip" && rm "nn_doc_selector.zip"
+	
+	wget -O "saved_sselector.zip" "https://www.dropbox.com/s/56tadhfti1zolnz/saved_sselector.zip?dl=0"
+	unzip "saved_sselector.zip" && rm "saved_sselector.zip"
+
+	cd /fever/data
+	wget -O "chaonan99.zip" "https://www.dropbox.com/s/pu3h5xc2kpws0n2/chaonan99.zip?dl=0"
+	unzip "chaonan99.zip" && rm "chaonan99.zip"
+
+	cd /fever
+	mv data/chaonan99/* data/
+	mv "data/models/saved_sselector/i(57167)_epoch(6)_(tra_score:0.8850885088508851|raw_acc:1.0|pr:0.3834395939593578|rec:0.8276327632763276|f1:0.5240763176570098)_epoch" data/models/sent_selector
+	mv "data/models/saved_sselector/i(58915)_epoch(7)_(tra_score:0.8838383838383839|raw_acc:1.0|pr:0.39771352135209675|rec:0.8257575757575758|f1:0.5368577222846761)_epoch" data/models/sent_selector_1
+	mv "data/models/saved_sselector/i(77083)_epoch(7)_(tra_score:0.8841384138413841|raw_acc:1.0|pr:0.3964771477147341|rec:0.8262076207620762|f1:0.5358248492912955)_epoch" data/models/sent_selector_2
+	mv data/models/nn_doc_selector data/models/nnds
+	mv "data/models/nnds/i(9000)_epoch(1)_(tra_score:0.9212421242124212|pr:0.4299679967996279|rec:0.8818631863186318|f1:0.5780819247968391)" data/models/nn_doc_selector
+	mv "data/models/saved_nli_m/i(77000)_epoch(11)_dev(0.6601160116011601)_loss(1.1138329989302813)_seed(12)" data/models/nli
+	rm -rf data/models/saved_sselector
+	rm -rf data/models/nnds
+	rm -rf data/models/saved_nli_m
+
+	mkdir /tmp/wiki-pages
+	cd /tmp/wiki-pages
+	wget https://s3-eu-west-1.amazonaws.com/fever.public/wiki-pages.zip
+	unzip "wiki-pages.zip" && rm "wiki-pages.zip" && rm "__MACOSX"
+
+	mv ~/fever-unc-system/requirements.txt /fever/
+	mv ~/fever-unc-system/src /fever/src
+	mv ~/fever-unc-system/scripts /fever/scripts/
+
+	cd /fever/
+	pip install -r requirements.txt
+
+	python -c 'import nltk; nltk.download("wordnet_ic"); \
+ nltk.download("averaged_perceptron_tagger"); nltk.download("wordnet")'
+	
+	cd /fever/data
+	wget -O "fever.db" "https://owncloud.cesnet.cz/index.php/s/sTjaccQ9TkxPrXI/download?path=%2Fdata&files=fever.db"
+	wget -O "fever_cs.db" "https://owncloud.cesnet.cz/index.php/s/sTjaccQ9TkxPrXI/download?path=%2Fdata-cs&files=fever_cs.db"
+	
+%runscript
+	waitress-serve --host=0.0.0.0 --port=5000 --call app:web
+
+	
